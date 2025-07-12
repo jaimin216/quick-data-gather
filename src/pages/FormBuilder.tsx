@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,10 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Save, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, Share } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { FormShare } from '@/components/FormShare';
 import type { Tables, Enums } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
@@ -48,6 +49,7 @@ export default function FormBuilder() {
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingForm, setLoadingForm] = useState(!!id);
+  const [isPublished, setIsPublished] = useState(false);
 
   useEffect(() => {
     if (user && id) {
@@ -233,9 +235,10 @@ export default function FormBuilder() {
 
       if (error) throw error;
 
+      setIsPublished(true);
       toast({
         title: "Success",
-        description: "Form published successfully!",
+        description: "Form published successfully! You can now share it with others.",
       });
     } catch (error) {
       console.error('Error publishing form:', error);
@@ -267,10 +270,28 @@ export default function FormBuilder() {
             <span>{saving ? 'Saving...' : 'Save'}</span>
           </Button>
           {id && (
-            <Button onClick={publishForm} variant="outline" className="flex items-center space-x-2">
-              <Eye className="h-4 w-4" />
-              <span>Publish</span>
-            </Button>
+            <>
+              <Button onClick={publishForm} variant="outline" className="flex items-center space-x-2">
+                <Eye className="h-4 w-4" />
+                <span>Publish</span>
+              </Button>
+              {isPublished && (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex items-center space-x-2">
+                      <Share className="h-4 w-4" />
+                      <span>Share</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Share Your Form</DialogTitle>
+                    </DialogHeader>
+                    <FormShare formId={id} formTitle={form.title} />
+                  </DialogContent>
+                </Dialog>
+              )}
+            </>
           )}
         </div>
       </div>

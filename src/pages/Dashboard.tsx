@@ -4,10 +4,12 @@ import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, QrCode, Share } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { FormShare } from '@/components/FormShare';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
@@ -136,11 +138,26 @@ export default function Dashboard() {
                   </span>
                   <div className="flex space-x-2">
                     {form.status === 'published' && (
-                      <Button size="sm" variant="outline" asChild>
-                        <Link to={`/forms/${form.id}/view`}>
-                          <Eye className="h-4 w-4" />
-                        </Link>
-                      </Button>
+                      <>
+                        <Button size="sm" variant="outline" asChild>
+                          <Link to={`/forms/${form.id}/view`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              <QrCode className="h-4 w-4" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Share "{form.title}"</DialogTitle>
+                            </DialogHeader>
+                            <FormShare formId={form.id} formTitle={form.title} />
+                          </DialogContent>
+                        </Dialog>
+                      </>
                     )}
                     <Button size="sm" variant="outline" asChild>
                       <Link to={`/forms/${form.id}/edit`}>
