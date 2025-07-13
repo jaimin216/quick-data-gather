@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Eye, Edit, Trash2, QrCode, Share } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, QrCode, Share, BarChart3 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { FormShare } from '@/components/FormShare';
 import type { Tables } from '@/integrations/supabase/types';
@@ -142,6 +142,11 @@ export default function Dashboard() {
                         <Button size="sm" variant="outline" asChild>
                           <Link to={`/forms/${form.id}/view`}>
                             <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button size="sm" variant="outline" asChild>
+                          <Link to={`/forms/${form.id}/responses`}>
+                            <BarChart3 className="h-4 w-4" />
                           </Link>
                         </Button>
                         <Dialog>

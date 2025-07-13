@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";  
@@ -12,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import FormBuilder from "./pages/FormBuilder";
 import NotFound from "./pages/NotFound";
 import PublicForm from "./pages/PublicForm";
+import FormResponses from "./pages/FormResponses";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +34,7 @@ const App: React.FC = () => {
                 <Route path="/forms/new" element={<FormBuilder />} />
                 <Route path="/forms/:id/edit" element={<FormBuilder />} />
                 <Route path="/forms/:id/view" element={<PublicForm />} />
+                <Route path="/forms/:id/responses" element={<FormResponses />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
