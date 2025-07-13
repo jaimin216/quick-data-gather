@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Eye, Edit, Trash2, QrCode, Share, BarChart3 } from 'lucide-react';
+import { Plus, Eye, Edit, Trash2, QrCode, Share, BarChart3, Sparkles } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { FormShare } from '@/components/FormShare';
+import { FormTemplateSelector } from '@/components/FormTemplateSelector';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
@@ -18,6 +18,7 @@ export default function Dashboard() {
   const { user, loading } = useAuth();
   const [forms, setForms] = useState<Form[]>([]);
   const [formsLoading, setFormsLoading] = useState(true);
+  const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -74,6 +75,13 @@ export default function Dashboard() {
     }
   };
 
+  const handleTemplateSelect = (template: any) => {
+    setTemplateSelectorOpen(false);
+    // Navigate to form builder with template data
+    const templateData = encodeURIComponent(JSON.stringify(template));
+    window.location.href = `/forms/new?template=${templateData}`;
+  };
+
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
@@ -89,12 +97,22 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900">My Forms</h1>
           <p className="text-gray-600 mt-2">Manage your forms and view responses</p>
         </div>
-        <Link to="/forms/new">
-          <Button className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Create New Form</span>
+        <div className="flex gap-3">
+          <Button 
+            onClick={() => setTemplateSelectorOpen(true)}
+            variant="outline"
+            className="flex items-center space-x-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            <span>Use Template</span>
           </Button>
-        </Link>
+          <Link to="/forms/new">
+            <Button className="flex items-center space-x-2">
+              <Plus className="h-4 w-4" />
+              <span>Create New Form</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {formsLoading ? (
@@ -105,12 +123,22 @@ export default function Dashboard() {
             <div className="space-y-4">
               <h3 className="text-xl font-semibold">No forms yet</h3>
               <p className="text-gray-600">Create your first form to get started collecting responses.</p>
-              <Link to="/forms/new">
-                <Button className="flex items-center space-x-2 mx-auto">
-                  <Plus className="h-4 w-4" />
-                  <span>Create Your First Form</span>
+              <div className="flex justify-center gap-3">
+                <Button 
+                  onClick={() => setTemplateSelectorOpen(true)}
+                  variant="outline"
+                  className="flex items-center space-x-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Use Template</span>
                 </Button>
-              </Link>
+                <Link to="/forms/new">
+                  <Button className="flex items-center space-x-2">
+                    <Plus className="h-4 w-4" />
+                    <span>Create Blank Form</span>
+                  </Button>
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -183,6 +211,12 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+
+      <FormTemplateSelector
+        open={templateSelectorOpen}
+        onOpenChange={setTemplateSelectorOpen}
+        onSelectTemplate={handleTemplateSelect}
+      />
     </div>
   );
 }

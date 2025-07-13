@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams, Navigate } from 'react-router-dom';
+import { useNavigate, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,6 +40,7 @@ export default function FormBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState<FormData>({
     title: '',
     description: '',
@@ -54,8 +55,49 @@ export default function FormBuilder() {
   useEffect(() => {
     if (user && id) {
       loadForm();
+    } else if (user && !id) {
+      // Check if there's a template in the URL params
+      const templateParam = searchParams.get('template');
+      if (templateParam) {
+        try {
+          const template = JSON.parse(decodeURIComponent(templateParam));
+          loadTemplate(template);
+        } catch (error) {
+          console.error('Error parsing template:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load template. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
     }
-  }, [user, id]);
+  }, [user, id, searchParams]);
+
+  const loadTemplate = (template: any) => {
+    setForm({
+      title: template.form.title,
+      description: template.form.description,
+      allow_anonymous: template.form.allow_anonymous,
+      collect_email: template.form.collect_email,
+    });
+
+    const templateQuestions = template.questions.map((q: any, index: number) => ({
+      type: q.type,
+      title: q.title,
+      description: q.description,
+      required: q.required,
+      options: q.options || [],
+      order_index: index,
+    }));
+
+    setQuestions(templateQuestions);
+
+    toast({
+      title: "Template Loaded",
+      description: `${template.name} template has been applied successfully.`,
+    });
+  };
 
   const loadForm = async () => {
     if (!id) return;
