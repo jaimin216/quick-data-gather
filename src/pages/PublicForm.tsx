@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { CheckCircle, Star } from 'lucide-react';
-import type { Tables } from '@/integrations/supabase/types';
+import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
 type Question = Tables<'questions'>;
@@ -101,7 +101,7 @@ export default function PublicForm() {
       }
 
       // Create form response with proper typing
-      const formResponseData: Tables<'form_responses'>['Insert'] = {
+      const formResponseData: TablesInsert<'form_responses'> = {
         form_id: form.id,
       };
 
