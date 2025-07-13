@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -101,8 +100,8 @@ export default function PublicForm() {
         }
       }
 
-      // Create form response without specifying respondent_id for anonymous users
-      const formResponseData: Record<string, any> = {
+      // Create form response with proper typing
+      const formResponseData: Tables<'form_responses'>['Insert'] = {
         form_id: form.id,
       };
 
