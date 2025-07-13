@@ -1,15 +1,16 @@
-import { useEffect, useState } from 'react';
+
+import { useEffect, useState, useMemo } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Eye, Edit, Trash2, QrCode, Share, BarChart3, Sparkles } from 'lucide-react';
+import { Plus, Sparkles } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { FormShare } from '@/components/FormShare';
 import { FormTemplateSelector } from '@/components/FormTemplateSelector';
+import { FormCard } from '@/components/FormCard';
+import { DashboardFilters } from '@/components/DashboardFilters';
+import { EmptyDashboard } from '@/components/EmptyDashboard';
 import type { Tables } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
@@ -19,6 +20,11 @@ export default function Dashboard() {
   const [forms, setForms] = useState<Form[]>([]);
   const [formsLoading, setFormsLoading] = useState(true);
   const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
+  
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('created_desc');
 
   useEffect(() => {
     if (user) {
@@ -47,43 +53,68 @@ export default function Dashboard() {
     }
   };
 
-  const deleteForm = async (formId: string) => {
-    if (!confirm('Are you sure you want to delete this form? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('forms')
-        .delete()
-        .eq('id', formId);
-
-      if (error) throw error;
-
-      setForms(forms.filter(form => form.id !== formId));
-      toast({
-        title: "Success",
-        description: "Form deleted successfully.",
-      });
-    } catch (error) {
-      console.error('Error deleting form:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete form. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleDeleteForm = (formId: string) => {
+    setForms(forms.filter(form => form.id !== formId));
   };
 
   const handleTemplateSelect = (template: any) => {
     setTemplateSelectorOpen(false);
-    // Navigate to form builder with template data
     const templateData = encodeURIComponent(JSON.stringify(template));
     window.location.href = `/forms/new?template=${templateData}`;
   };
 
+  // Filter and sort forms
+  const filteredAndSortedForms = useMemo(() => {
+    let filtered = forms;
+
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(form =>
+        form.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (form.description && form.description.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(form => form.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'created_desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'created_asc':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'updated_desc':
+          return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        case 'title_asc':
+          return a.title.localeCompare(b.title);
+        case 'title_desc':
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [forms, searchQuery, statusFilter, sortBy]);
+
+  const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all' || sortBy !== 'created_desc';
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStatusFilter('all');
+    setSortBy('created_desc');
+  };
+
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -92,11 +123,14 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Forms</h1>
-          <p className="text-gray-600 mt-2">Manage your forms and view responses</p>
+          <h1 className="text-3xl font-bold text-foreground">My Forms</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage your forms and view responses
+          </p>
         </div>
+        
         <div className="flex gap-3">
           <Button 
             onClick={() => setTemplateSelectorOpen(true)}
@@ -116,100 +150,45 @@ export default function Dashboard() {
       </div>
 
       {formsLoading ? (
-        <div className="text-center py-8">Loading forms...</div>
-      ) : forms.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold">No forms yet</h3>
-              <p className="text-gray-600">Create your first form to get started collecting responses.</p>
-              <div className="flex justify-center gap-3">
-                <Button 
-                  onClick={() => setTemplateSelectorOpen(true)}
-                  variant="outline"
-                  className="flex items-center space-x-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  <span>Use Template</span>
-                </Button>
-                <Link to="/forms/new">
-                  <Button className="flex items-center space-x-2">
-                    <Plus className="h-4 w-4" />
-                    <span>Create Blank Form</span>
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {forms.map((form) => (
-            <Card key={form.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{form.title}</CardTitle>
-                  <Badge variant={form.status === 'published' ? 'default' : 'secondary'}>
-                    {form.status}
-                  </Badge>
-                </div>
-                {form.description && (
-                  <CardDescription className="line-clamp-2">
-                    {form.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500">
-                    Created {new Date(form.created_at).toLocaleDateString()}
-                  </span>
-                  <div className="flex space-x-2">
-                    {form.status === 'published' && (
-                      <>
-                        <Button size="sm" variant="outline" asChild>
-                          <Link to={`/forms/${form.id}/view`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button size="sm" variant="outline" asChild>
-                          <Link to={`/forms/${form.id}/responses`}>
-                            <BarChart3 className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size="sm" variant="outline">
-                              <QrCode className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Share "{form.title}"</DialogTitle>
-                            </DialogHeader>
-                            <FormShare formId={form.id} formTitle={form.title} />
-                          </DialogContent>
-                        </Dialog>
-                      </>
-                    )}
-                    <Button size="sm" variant="outline" asChild>
-                      <Link to={`/forms/${form.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      onClick={() => deleteForm(form.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
+      ) : forms.length === 0 ? (
+        <EmptyDashboard onUseTemplate={() => setTemplateSelectorOpen(true)} />
+      ) : (
+        <>
+          <DashboardFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            onClearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+          />
+
+          {filteredAndSortedForms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground mb-4">
+                No forms match your current filters.
+              </p>
+              <Button onClick={clearFilters} variant="outline">
+                Clear Filters
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredAndSortedForms.map((form) => (
+                <FormCard
+                  key={form.id}
+                  form={form}
+                  onDelete={handleDeleteForm}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       <FormTemplateSelector
