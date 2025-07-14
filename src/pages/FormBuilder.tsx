@@ -1,18 +1,15 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Trash2, Save, Eye, Share } from 'lucide-react';
+import { Eye, Share } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { FormShare } from '@/components/FormShare';
+import FormSettings from '@/components/FormSettings';
+import QuestionsBuilder from '@/components/QuestionsBuilder';
 import type { Tables, Enums } from '@/integrations/supabase/types';
 
 type Form = Tables<'forms'>;
@@ -51,6 +48,7 @@ export default function FormBuilder() {
   const [saving, setSaving] = useState(false);
   const [loadingForm, setLoadingForm] = useState(!!id);
   const [isPublished, setIsPublished] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date>();
 
   useEffect(() => {
     if (user && id) {
@@ -118,6 +116,8 @@ export default function FormBuilder() {
         collect_email: formData.collect_email,
       });
 
+      setIsPublished(formData.status === 'published');
+
       const { data: questionsData, error: questionsError } = await supabase
         .from('questions')
         .select('*')
@@ -145,28 +145,6 @@ export default function FormBuilder() {
     } finally {
       setLoadingForm(false);
     }
-  };
-
-  const addQuestion = () => {
-    const newQuestion: QuestionData = {
-      type: 'text',
-      title: '',
-      description: '',
-      required: false,
-      order_index: questions.length,
-    };
-    setQuestions([...questions, newQuestion]);
-  };
-
-  const updateQuestion = (index: number, field: keyof QuestionData, value: any) => {
-    const updatedQuestions = [...questions];
-    updatedQuestions[index] = { ...updatedQuestions[index], [field]: value };
-    setQuestions(updatedQuestions);
-  };
-
-  const removeQuestion = (index: number) => {
-    const updatedQuestions = questions.filter((_, i) => i !== index);
-    setQuestions(updatedQuestions.map((q, i) => ({ ...q, order_index: i })));
   };
 
   const saveForm = async () => {
@@ -239,6 +217,7 @@ export default function FormBuilder() {
         if (questionsError) throw questionsError;
       }
 
+      setLastSaved(new Date());
       toast({
         title: "Success",
         description: "Form saved successfully!",
@@ -293,7 +272,11 @@ export default function FormBuilder() {
   };
 
   if (loading || loadingForm) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+      </div>
+    );
   }
 
   if (!user) {
@@ -302,15 +285,11 @@ export default function FormBuilder() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900">
           {id ? 'Edit Form' : 'Create New Form'}
         </h1>
-        <div className="flex space-x-3">
-          <Button onClick={saveForm} disabled={saving} className="flex items-center space-x-2">
-            <Save className="h-4 w-4" />
-            <span>{saving ? 'Saving...' : 'Save'}</span>
-          </Button>
+        <div className="flex flex-wrap gap-3">
           {id && (
             <>
               <Button onClick={publishForm} variant="outline" className="flex items-center space-x-2">
@@ -338,148 +317,19 @@ export default function FormBuilder() {
         </div>
       </div>
 
-      <div className="space-y-8">
-        {/* Form Settings */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Form Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="title">Form Title</Label>
-              <Input
-                id="title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="Enter form title"
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Enter form description"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allow_anonymous"
-                checked={form.allow_anonymous}
-                onCheckedChange={(checked) => setForm({ ...form, allow_anonymous: !!checked })}
-              />
-              <Label htmlFor="allow_anonymous">Allow anonymous responses</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="collect_email"
-                checked={form.collect_email}
-                onCheckedChange={(checked) => setForm({ ...form, collect_email: !!checked })}
-              />
-              <Label htmlFor="collect_email">Collect email addresses</Label>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="space-y-6">
+        <FormSettings
+          form={form}
+          onFormChange={setForm}
+          onSave={saveForm}
+          saving={saving}
+          lastSaved={lastSaved}
+        />
 
-        {/* Questions */}
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Questions</CardTitle>
-              <Button onClick={addQuestion} className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span>Add Question</span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {questions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">
-                No questions yet. Click "Add Question" to get started.
-              </p>
-            ) : (
-              <div className="space-y-6">
-                {questions.map((question, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-4">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium">Question {index + 1}</h4>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => removeQuestion(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Question Type</Label>
-                        <Select
-                          value={question.type}
-                          onValueChange={(value) => updateQuestion(index, 'type', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="text">Text</SelectItem>
-                            <SelectItem value="textarea">Long Text</SelectItem>
-                            <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                            <SelectItem value="checkbox">Checkbox</SelectItem>
-                            <SelectItem value="dropdown">Dropdown</SelectItem>
-                            <SelectItem value="number">Number</SelectItem>
-                            <SelectItem value="email">Email</SelectItem>
-                            <SelectItem value="date">Date</SelectItem>
-                            <SelectItem value="rating">Rating</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={question.required}
-                          onCheckedChange={(checked) => updateQuestion(index, 'required', !!checked)}
-                        />
-                        <Label>Required</Label>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label>Question Title</Label>
-                      <Input
-                        value={question.title}
-                        onChange={(e) => updateQuestion(index, 'title', e.target.value)}
-                        placeholder="Enter question title"
-                      />
-                    </div>
-
-                    <div>
-                      <Label>Description (Optional)</Label>
-                      <Input
-                        value={question.description}
-                        onChange={(e) => updateQuestion(index, 'description', e.target.value)}
-                        placeholder="Enter question description"
-                      />
-                    </div>
-
-                    {['multiple_choice', 'checkbox', 'dropdown'].includes(question.type) && (
-                      <div>
-                        <Label>Options</Label>
-                        <Textarea
-                          value={(question.options || []).join('\n')}
-                          onChange={(e) => updateQuestion(index, 'options', e.target.value.split('\n').filter(opt => opt.trim()))}
-                          placeholder="Enter options (one per line)"
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <QuestionsBuilder
+          questions={questions}
+          onQuestionsChange={setQuestions}
+        />
       </div>
     </div>
   );
