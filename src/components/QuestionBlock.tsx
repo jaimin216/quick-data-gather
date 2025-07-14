@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { GripVertical, Trash2, Copy, ChevronDown, Plus, X } from 'lucide-react';
+import QuizQuestionSettings from './QuizQuestionSettings';
 import type { Enums } from '@/integrations/supabase/types';
 
 type QuestionType = Enums<'question_type'>;
@@ -21,12 +22,16 @@ interface QuestionData {
   required: boolean;
   options?: string[];
   order_index: number;
+  points?: number;
+  correct_answers?: string[];
+  explanation?: string;
 }
 
 interface QuestionBlockProps {
   question: QuestionData;
   index: number;
   isActive: boolean;
+  isQuiz: boolean;
   onUpdate: (field: keyof QuestionData, value: any) => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -37,6 +42,7 @@ export default function QuestionBlock({
   question, 
   index, 
   isActive, 
+  isQuiz,
   onUpdate, 
   onDuplicate, 
   onDelete,
@@ -62,6 +68,13 @@ export default function QuestionBlock({
     const newOptions = options.filter((_, i) => i !== optionIndex);
     setOptions(newOptions);
     onUpdate('options', newOptions);
+    
+    // Update correct answers if they reference removed options
+    if (isQuiz && question.correct_answers) {
+      const removedOption = options[optionIndex];
+      const updatedCorrectAnswers = question.correct_answers.filter(answer => answer !== removedOption);
+      onUpdate('correct_answers', updatedCorrectAnswers);
+    }
   };
 
   const needsOptions = ['multiple_choice', 'checkbox', 'dropdown'].includes(question.type);
@@ -95,6 +108,11 @@ export default function QuestionBlock({
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                   <span className="font-medium">Question {index + 1}</span>
+                  {isQuiz && question.points && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                      {question.points} pts
+                    </span>
+                  )}
                   <ChevronDown className={`h-4 w-4 transition-transform ${isCollapsed ? '' : 'rotate-180'}`} />
                 </Button>
               </CollapsibleTrigger>
@@ -213,6 +231,19 @@ export default function QuestionBlock({
                   </Button>
                 </div>
               </div>
+            )}
+
+            {isQuiz && (
+              <QuizQuestionSettings
+                questionType={question.type}
+                points={question.points || 1}
+                onPointsChange={(points) => onUpdate('points', points)}
+                correctAnswers={question.correct_answers || []}
+                onCorrectAnswersChange={(answers) => onUpdate('correct_answers', answers)}
+                explanation={question.explanation || ''}
+                onExplanationChange={(explanation) => onUpdate('explanation', explanation)}
+                options={options}
+              />
             )}
           </CollapsibleContent>
         </Collapsible>

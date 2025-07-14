@@ -21,6 +21,12 @@ interface FormData {
   description: string;
   allow_anonymous: boolean;
   collect_email: boolean;
+  is_quiz: boolean;
+  time_limit_minutes?: number;
+  passing_score?: number;
+  show_results: boolean;
+  allow_retake: boolean;
+  auto_save_enabled: boolean;
 }
 
 interface QuestionData {
@@ -31,6 +37,9 @@ interface QuestionData {
   required: boolean;
   options?: string[];
   order_index: number;
+  points?: number;
+  correct_answers?: string[];
+  explanation?: string;
 }
 
 export default function FormBuilder() {
@@ -43,6 +52,10 @@ export default function FormBuilder() {
     description: '',
     allow_anonymous: true,
     collect_email: false,
+    is_quiz: false,
+    show_results: true,
+    allow_retake: true,
+    auto_save_enabled: true,
   });
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [saving, setSaving] = useState(false);
@@ -78,6 +91,12 @@ export default function FormBuilder() {
       description: template.form.description,
       allow_anonymous: template.form.allow_anonymous,
       collect_email: template.form.collect_email,
+      is_quiz: template.form.is_quiz || false,
+      show_results: template.form.show_results ?? true,
+      allow_retake: template.form.allow_retake ?? true,
+      auto_save_enabled: template.form.auto_save_enabled ?? true,
+      time_limit_minutes: template.form.time_limit_minutes,
+      passing_score: template.form.passing_score,
     });
 
     const templateQuestions = template.questions.map((q: any, index: number) => ({
@@ -87,6 +106,9 @@ export default function FormBuilder() {
       required: q.required,
       options: q.options || [],
       order_index: index,
+      points: q.points || (template.form.is_quiz ? 1 : undefined),
+      correct_answers: q.correct_answers || [],
+      explanation: q.explanation || '',
     }));
 
     setQuestions(templateQuestions);
@@ -114,6 +136,12 @@ export default function FormBuilder() {
         description: formData.description || '',
         allow_anonymous: formData.allow_anonymous,
         collect_email: formData.collect_email,
+        is_quiz: formData.is_quiz || false,
+        time_limit_minutes: formData.time_limit_minutes || undefined,
+        passing_score: formData.passing_score || undefined,
+        show_results: formData.show_results ?? true,
+        allow_retake: formData.allow_retake ?? true,
+        auto_save_enabled: formData.auto_save_enabled ?? true,
       });
 
       setIsPublished(formData.status === 'published');
@@ -134,6 +162,9 @@ export default function FormBuilder() {
         required: q.required,
         options: q.options as string[] || [],
         order_index: q.order_index,
+        points: q.points || undefined,
+        correct_answers: q.correct_answers as string[] || [],
+        explanation: q.explanation || '',
       })));
     } catch (error) {
       console.error('Error loading form:', error);
@@ -161,17 +192,27 @@ export default function FormBuilder() {
 
     try {
       let formId = id;
+      const totalPoints = form.is_quiz ? questions.reduce((sum, q) => sum + (q.points || 1), 0) : 0;
+
+      const formUpdateData = {
+        title: form.title,
+        description: form.description,
+        allow_anonymous: form.allow_anonymous,
+        collect_email: form.collect_email,
+        is_quiz: form.is_quiz,
+        time_limit_minutes: form.time_limit_minutes,
+        passing_score: form.passing_score,
+        total_points: totalPoints,
+        show_results: form.show_results,
+        allow_retake: form.allow_retake,
+        auto_save_enabled: form.auto_save_enabled,
+      };
 
       if (id) {
         // Update existing form
         const { error: formError } = await supabase
           .from('forms')
-          .update({
-            title: form.title,
-            description: form.description,
-            allow_anonymous: form.allow_anonymous,
-            collect_email: form.collect_email,
-          })
+          .update(formUpdateData)
           .eq('id', id);
 
         if (formError) throw formError;
@@ -180,10 +221,7 @@ export default function FormBuilder() {
         const { data: newForm, error: formError } = await supabase
           .from('forms')
           .insert({
-            title: form.title,
-            description: form.description,
-            allow_anonymous: form.allow_anonymous,
-            collect_email: form.collect_email,
+            ...formUpdateData,
             user_id: user!.id,
           })
           .select()
@@ -208,6 +246,9 @@ export default function FormBuilder() {
           required: q.required,
           options: q.options?.length ? q.options : null,
           order_index: q.order_index,
+          points: form.is_quiz ? (q.points || 1) : null,
+          correct_answers: form.is_quiz && q.correct_answers?.length ? q.correct_answers : null,
+          explanation: form.is_quiz ? q.explanation : null,
         }));
 
         const { error: questionsError } = await supabase
@@ -220,7 +261,7 @@ export default function FormBuilder() {
       setLastSaved(new Date());
       toast({
         title: "Success",
-        description: "Form saved successfully!",
+        description: `${form.is_quiz ? 'Quiz' : 'Form'} saved successfully!`,
       });
 
       if (!id) {
@@ -230,7 +271,7 @@ export default function FormBuilder() {
       console.error('Error saving form:', error);
       toast({
         title: "Error",
-        description: "Failed to save form. Please try again.",
+        description: `Failed to save ${form.is_quiz ? 'quiz' : 'form'}. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -242,7 +283,7 @@ export default function FormBuilder() {
     if (!id) {
       toast({
         title: "Error",
-        description: "Please save the form first before publishing.",
+        description: `Please save the ${form.is_quiz ? 'quiz' : 'form'} first before publishing.`,
         variant: "destructive",
       });
       return;
@@ -259,13 +300,13 @@ export default function FormBuilder() {
       setIsPublished(true);
       toast({
         title: "Success",
-        description: "Form published successfully! You can now share it with others.",
+        description: `${form.is_quiz ? 'Quiz' : 'Form'} published successfully! You can now share it with others.`,
       });
     } catch (error) {
       console.error('Error publishing form:', error);
       toast({
         title: "Error",
-        description: "Failed to publish form. Please try again.",
+        description: `Failed to publish ${form.is_quiz ? 'quiz' : 'form'}. Please try again.`,
         variant: "destructive",
       });
     }
@@ -287,7 +328,7 @@ export default function FormBuilder() {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 space-y-4 sm:space-y-0">
         <h1 className="text-3xl font-bold text-gray-900">
-          {id ? 'Edit Form' : 'Create New Form'}
+          {id ? `Edit ${form.is_quiz ? 'Quiz' : 'Form'}` : `Create New ${form.is_quiz ? 'Quiz' : 'Form'}`}
         </h1>
         <div className="flex flex-wrap gap-3">
           {id && (
@@ -306,7 +347,7 @@ export default function FormBuilder() {
                   </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Share Your Form</DialogTitle>
+                      <DialogTitle>Share Your {form.is_quiz ? 'Quiz' : 'Form'}</DialogTitle>
                     </DialogHeader>
                     <FormShare formId={id} formTitle={form.title} />
                   </DialogContent>
@@ -329,6 +370,7 @@ export default function FormBuilder() {
         <QuestionsBuilder
           questions={questions}
           onQuestionsChange={setQuestions}
+          isQuiz={form.is_quiz}
         />
       </div>
     </div>

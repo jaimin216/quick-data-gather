@@ -16,14 +16,18 @@ interface QuestionData {
   required: boolean;
   options?: string[];
   order_index: number;
+  points?: number;
+  correct_answers?: string[];
+  explanation?: string;
 }
 
 interface QuestionsBuilderProps {
   questions: QuestionData[];
   onQuestionsChange: (questions: QuestionData[]) => void;
+  isQuiz: boolean;
 }
 
-export default function QuestionsBuilder({ questions, onQuestionsChange }: QuestionsBuilderProps) {
+export default function QuestionsBuilder({ questions, onQuestionsChange, isQuiz }: QuestionsBuilderProps) {
   const [activeQuestionIndex, setActiveQuestionIndex] = useState<number>(-1);
 
   const addQuestion = () => {
@@ -33,6 +37,7 @@ export default function QuestionsBuilder({ questions, onQuestionsChange }: Quest
       description: '',
       required: false,
       order_index: questions.length,
+      ...(isQuiz && { points: 1, correct_answers: [], explanation: '' })
     };
     const newQuestions = [...questions, newQuestion];
     onQuestionsChange(newQuestions);
@@ -63,15 +68,24 @@ export default function QuestionsBuilder({ questions, onQuestionsChange }: Quest
     setActiveQuestionIndex(-1);
   };
 
+  const totalPoints = isQuiz ? questions.reduce((sum, q) => sum + (q.points || 1), 0) : 0;
+
   return (
     <Card>
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Form Builder</CardTitle>
+          <div>
+            <CardTitle>{isQuiz ? 'Quiz Builder' : 'Form Builder'}</CardTitle>
+            {isQuiz && totalPoints > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Total Points: {totalPoints}
+              </p>
+            )}
+          </div>
           <div className="hidden md:block">
             <Button onClick={addQuestion} className="flex items-center space-x-2">
               <Plus className="h-4 w-4" />
-              <span>Add Question</span>
+              <span>Add {isQuiz ? 'Question' : 'Question'}</span>
             </Button>
           </div>
         </div>
@@ -79,7 +93,9 @@ export default function QuestionsBuilder({ questions, onQuestionsChange }: Quest
       <CardContent>
         {questions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">No questions yet. Start building your form!</p>
+            <p className="text-gray-500 mb-4">
+              No questions yet. Start building your {isQuiz ? 'quiz' : 'form'}!
+            </p>
             <Button onClick={addQuestion} className="flex items-center space-x-2">
               <Plus className="h-4 w-4" />
               <span>Add Your First Question</span>
@@ -93,6 +109,7 @@ export default function QuestionsBuilder({ questions, onQuestionsChange }: Quest
                 question={question}
                 index={index}
                 isActive={activeQuestionIndex === index}
+                isQuiz={isQuiz}
                 onUpdate={(field, value) => updateQuestion(index, field, value)}
                 onDuplicate={() => duplicateQuestion(index)}
                 onDelete={() => removeQuestion(index)}

@@ -5,12 +5,20 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Save, Check, X } from 'lucide-react';
+import FormModeToggle from './FormModeToggle';
+import QuizSettings from './QuizSettings';
 
 interface FormData {
   title: string;
   description: string;
   allow_anonymous: boolean;
   collect_email: boolean;
+  is_quiz: boolean;
+  time_limit_minutes?: number;
+  passing_score?: number;
+  show_results: boolean;
+  allow_retake: boolean;
+  auto_save_enabled: boolean;
 }
 
 interface FormSettingsProps {
@@ -71,61 +79,83 @@ export default function FormSettings({ form, onFormChange, onSave, saving, lastS
   };
 
   return (
-    <Card className="rounded-lg shadow-md bg-gray-50 relative">
-      <CardContent className="p-4">
-        <div className="absolute top-4 right-4">
-          <Button 
-            onClick={onSave} 
-            disabled={saving}
-            size="sm"
-            className="flex items-center space-x-2"
-          >
-            {getSaveStatusIcon()}
-            <span className="hidden sm:inline">{getSaveStatusText()}</span>
-          </Button>
-        </div>
+    <div className="space-y-4">
+      <FormModeToggle
+        isQuiz={form.is_quiz}
+        onToggle={(enabled) => onFormChange({ ...form, is_quiz: enabled })}
+      />
 
-        <div className="space-y-4 pr-20">
-          <div>
-            <input
-              type="text"
-              value={form.title}
-              onChange={handleTitleChange}
-              placeholder="Form Title"
-              className="text-2xl font-bold bg-transparent border-none outline-none focus:ring-0 w-full placeholder-gray-400"
-            />
-          </div>
-          
-          <div>
-            <textarea
-              value={form.description}
-              onChange={handleDescriptionChange}
-              placeholder="Form Description (Optional)"
-              className="text-gray-600 bg-transparent border-none outline-none focus:ring-0 w-full resize-none placeholder-gray-400"
-              rows={2}
-            />
+      <Card className="rounded-lg shadow-md bg-gray-50 relative">
+        <CardContent className="p-4">
+          <div className="absolute top-4 right-4">
+            <Button 
+              onClick={onSave} 
+              disabled={saving}
+              size="sm"
+              className="flex items-center space-x-2"
+            >
+              {getSaveStatusIcon()}
+              <span className="hidden sm:inline">{getSaveStatusText()}</span>
+            </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="allow_anonymous"
-                checked={form.allow_anonymous}
-                onCheckedChange={(checked) => onFormChange({ ...form, allow_anonymous: !!checked })}
+          <div className="space-y-4 pr-20">
+            <div>
+              <input
+                type="text"
+                value={form.title}
+                onChange={handleTitleChange}
+                placeholder={form.is_quiz ? "Quiz Title" : "Form Title"}
+                className="text-2xl font-bold bg-transparent border-none outline-none focus:ring-0 w-full placeholder-gray-400"
               />
-              <Label htmlFor="allow_anonymous" className="text-sm">Allow anonymous responses</Label>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="collect_email"
-                checked={form.collect_email}
-                onCheckedChange={(checked) => onFormChange({ ...form, collect_email: !!checked })}
+            
+            <div>
+              <textarea
+                value={form.description}
+                onChange={handleDescriptionChange}
+                placeholder={form.is_quiz ? "Quiz Description (Optional)" : "Form Description (Optional)"}
+                className="text-gray-600 bg-transparent border-none outline-none focus:ring-0 w-full resize-none placeholder-gray-400"
+                rows={2}
               />
-              <Label htmlFor="collect_email" className="text-sm">Collect email addresses</Label>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="allow_anonymous"
+                  checked={form.allow_anonymous}
+                  onCheckedChange={(checked) => onFormChange({ ...form, allow_anonymous: !!checked })}
+                />
+                <Label htmlFor="allow_anonymous" className="text-sm">Allow anonymous responses</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="collect_email"
+                  checked={form.collect_email}
+                  onCheckedChange={(checked) => onFormChange({ ...form, collect_email: !!checked })}
+                />
+                <Label htmlFor="collect_email" className="text-sm">Collect email addresses</Label>
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <QuizSettings
+        isQuiz={form.is_quiz}
+        onQuizToggle={(enabled) => onFormChange({ ...form, is_quiz: enabled })}
+        timeLimit={form.time_limit_minutes}
+        onTimeLimitChange={(minutes) => onFormChange({ ...form, time_limit_minutes: minutes })}
+        passingScore={form.passing_score}
+        onPassingScoreChange={(score) => onFormChange({ ...form, passing_score: score })}
+        showResults={form.show_results}
+        onShowResultsChange={(show) => onFormChange({ ...form, show_results: show })}
+        allowRetake={form.allow_retake}
+        onAllowRetakeChange={(allow) => onFormChange({ ...form, allow_retake: allow })}
+        autoSave={form.auto_save_enabled}
+        onAutoSaveChange={(enabled) => onFormChange({ ...form, auto_save_enabled: enabled })}
+      />
+    </div>
   );
 }

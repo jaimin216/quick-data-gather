@@ -55,40 +55,61 @@ export type Database = {
       forms: {
         Row: {
           allow_anonymous: boolean
+          allow_retake: boolean | null
+          auto_save_enabled: boolean | null
           collect_email: boolean
           created_at: string
           custom_thank_you_message: string | null
           description: string | null
           id: string
+          is_quiz: boolean | null
+          passing_score: number | null
           require_login: boolean
+          show_results: boolean | null
           status: Database["public"]["Enums"]["form_status"]
+          time_limit_minutes: number | null
           title: string
+          total_points: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           allow_anonymous?: boolean
+          allow_retake?: boolean | null
+          auto_save_enabled?: boolean | null
           collect_email?: boolean
           created_at?: string
           custom_thank_you_message?: string | null
           description?: string | null
           id?: string
+          is_quiz?: boolean | null
+          passing_score?: number | null
           require_login?: boolean
+          show_results?: boolean | null
           status?: Database["public"]["Enums"]["form_status"]
+          time_limit_minutes?: number | null
           title: string
+          total_points?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           allow_anonymous?: boolean
+          allow_retake?: boolean | null
+          auto_save_enabled?: boolean | null
           collect_email?: boolean
           created_at?: string
           custom_thank_you_message?: string | null
           description?: string | null
           id?: string
+          is_quiz?: boolean | null
+          passing_score?: number | null
           require_login?: boolean
+          show_results?: boolean | null
           status?: Database["public"]["Enums"]["form_status"]
+          time_limit_minutes?: number | null
           title?: string
+          total_points?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -135,36 +156,45 @@ export type Database = {
       }
       questions: {
         Row: {
+          correct_answers: Json | null
           created_at: string
           description: string | null
+          explanation: string | null
           form_id: string
           id: string
           options: Json | null
           order_index: number
+          points: number | null
           required: boolean
           title: string
           type: Database["public"]["Enums"]["question_type"]
           validation_rules: Json | null
         }
         Insert: {
+          correct_answers?: Json | null
           created_at?: string
           description?: string | null
+          explanation?: string | null
           form_id: string
           id?: string
           options?: Json | null
           order_index: number
+          points?: number | null
           required?: boolean
           title: string
           type: Database["public"]["Enums"]["question_type"]
           validation_rules?: Json | null
         }
         Update: {
+          correct_answers?: Json | null
           created_at?: string
           description?: string | null
+          explanation?: string | null
           form_id?: string
           id?: string
           options?: Json | null
           order_index?: number
+          points?: number | null
           required?: boolean
           title?: string
           type?: Database["public"]["Enums"]["question_type"]
@@ -176,6 +206,66 @@ export type Database = {
             columns: ["form_id"]
             isOneToOne: false
             referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_attempts: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          form_id: string
+          form_response_id: string
+          id: string
+          passed: boolean
+          percentage: number
+          score: number
+          started_at: string
+          time_taken_seconds: number | null
+          total_points: number
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          form_id: string
+          form_response_id: string
+          id?: string
+          passed?: boolean
+          percentage?: number
+          score?: number
+          started_at?: string
+          time_taken_seconds?: number | null
+          total_points?: number
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          form_id?: string
+          form_response_id?: string
+          id?: string
+          passed?: boolean
+          percentage?: number
+          score?: number
+          started_at?: string
+          time_taken_seconds?: number | null
+          total_points?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_attempts_form_response_id_fkey"
+            columns: ["form_response_id"]
+            isOneToOne: false
+            referencedRelation: "form_responses"
             referencedColumns: ["id"]
           },
         ]
