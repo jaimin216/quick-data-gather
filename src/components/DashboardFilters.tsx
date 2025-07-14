@@ -17,6 +17,8 @@ interface DashboardFiltersProps {
   onSearchChange: (query: string) => void;
   statusFilter: string;
   onStatusChange: (status: string) => void;
+  typeFilter: string;
+  onTypeChange: (type: string) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
   onClearFilters: () => void;
@@ -28,6 +30,8 @@ export function DashboardFilters({
   onSearchChange,
   statusFilter,
   onStatusChange,
+  typeFilter,
+  onTypeChange,
   sortBy,
   onSortChange,
   onClearFilters,
@@ -39,7 +43,7 @@ export function DashboardFilters({
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search forms..."
+            placeholder="Search forms and exams..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"
@@ -47,6 +51,17 @@ export function DashboardFilters({
         </div>
         
         <div className="flex gap-2">
+          <Select value={typeFilter} onValueChange={onTypeChange}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="form">📝 Forms</SelectItem>
+              <SelectItem value="exam">🧪 Exams</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select value={statusFilter} onValueChange={onStatusChange}>
             <SelectTrigger className="w-32">
               <Filter className="h-4 w-4 mr-2" />
@@ -68,6 +83,7 @@ export function DashboardFilters({
               <SelectItem value="created_desc">Newest First</SelectItem>
               <SelectItem value="created_asc">Oldest First</SelectItem>
               <SelectItem value="updated_desc">Recently Updated</SelectItem>
+              <SelectItem value="responses_desc">Most Responses</SelectItem>
               <SelectItem value="title_asc">Title A-Z</SelectItem>
               <SelectItem value="title_desc">Title Z-A</SelectItem>
             </SelectContent>

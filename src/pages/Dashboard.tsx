@@ -1,19 +1,23 @@
 
 import { useEffect, useState, useMemo } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
-import { FormShare } from '@/components/FormShare';
 import { FormTemplateSelector } from '@/components/FormTemplateSelector';
-import { FormCard } from '@/components/FormCard';
 import { DashboardFilters } from '@/components/DashboardFilters';
 import { EmptyDashboard } from '@/components/EmptyDashboard';
+import { UnifiedCreateButton } from '@/components/UnifiedCreateButton';
+import { SectionedFormDisplay } from '@/components/SectionedFormDisplay';
 import type { Tables } from '@/integrations/supabase/types';
 
-type Form = Tables<'forms'>;
+type Form = Tables<'forms'> & {
+  is_quiz?: boolean;
+  question_count?: number;
+  response_count?: number;
+};
 
 export default function Dashboard() {
   const { user, loading } = useAuth();
@@ -21,9 +25,10 @@ export default function Dashboard() {
   const [formsLoading, setFormsLoading] = useState(true);
   const [templateSelectorOpen, setTemplateSelectorOpen] = useState(false);
   
-  // Filter states
+  // Filter states with enhanced options
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all'); // all, form, exam
   const [sortBy, setSortBy] = useState('created_desc');
 
   useEffect(() => {
@@ -34,13 +39,26 @@ export default function Dashboard() {
 
   const fetchForms = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch forms with question count
+      const { data: formsData, error: formsError } = await supabase
         .from('forms')
-        .select('*')
+        .select(`
+          *,
+          questions(count)
+        `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setForms(data || []);
+      if (formsError) throw formsError;
+
+      // Transform the data to include question_count
+      const formsWithCounts = formsData?.map(form => ({
+        ...form,
+        question_count: form.questions?.[0]?.count || 0,
+        response_count: 0, // TODO: Add response count query
+        is_quiz: false // TODO: Add quiz detection logic
+      })) || [];
+
+      setForms(formsWithCounts);
     } catch (error) {
       console.error('Error fetching forms:', error);
       toast({
@@ -63,7 +81,7 @@ export default function Dashboard() {
     window.location.href = `/forms/new?template=${templateData}`;
   };
 
-  // Filter and sort forms
+  // Enhanced filter and sort logic
   const filteredAndSortedForms = useMemo(() => {
     let filtered = forms;
 
@@ -80,6 +98,13 @@ export default function Dashboard() {
       filtered = filtered.filter(form => form.status === statusFilter);
     }
 
+    // Apply type filter
+    if (typeFilter === 'form') {
+      filtered = filtered.filter(form => !form.is_quiz);
+    } else if (typeFilter === 'exam') {
+      filtered = filtered.filter(form => form.is_quiz);
+    }
+
     // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -89,6 +114,8 @@ export default function Dashboard() {
           return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
         case 'updated_desc':
           return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+        case 'responses_desc':
+          return (b.response_count || 0) - (a.response_count || 0);
         case 'title_asc':
           return a.title.localeCompare(b.title);
         case 'title_desc':
@@ -99,13 +126,14 @@ export default function Dashboard() {
     });
 
     return filtered;
-  }, [forms, searchQuery, statusFilter, sortBy]);
+  }, [forms, searchQuery, statusFilter, typeFilter, sortBy]);
 
-  const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all' || sortBy !== 'created_desc';
+  const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all' || typeFilter !== 'all' || sortBy !== 'created_desc';
 
   const clearFilters = () => {
     setSearchQuery('');
     setStatusFilter('all');
+    setTypeFilter('all');
     setSortBy('created_desc');
   };
 
@@ -125,9 +153,9 @@ export default function Dashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Forms</h1>
+          <h1 className="text-3xl font-bold text-foreground">My Dashboard</h1>
           <p className="text-muted-foreground mt-2">
-            Manage your forms and view responses
+            Manage your forms and exams, view responses and analytics
           </p>
         </div>
         
@@ -140,12 +168,7 @@ export default function Dashboard() {
             <Sparkles className="h-4 w-4" />
             <span>Use Template</span>
           </Button>
-          <Link to="/forms/new">
-            <Button className="flex items-center space-x-2">
-              <Plus className="h-4 w-4" />
-              <span>Create New Form</span>
-            </Button>
-          </Link>
+          <UnifiedCreateButton onUseTemplate={() => setTemplateSelectorOpen(true)} />
         </div>
       </div>
 
@@ -166,6 +189,8 @@ export default function Dashboard() {
             onSortChange={setSortBy}
             onClearFilters={clearFilters}
             hasActiveFilters={hasActiveFilters}
+            typeFilter={typeFilter}
+            onTypeChange={setTypeFilter}
           />
 
           {filteredAndSortedForms.length === 0 ? (
@@ -178,15 +203,10 @@ export default function Dashboard() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredAndSortedForms.map((form) => (
-                <FormCard
-                  key={form.id}
-                  form={form}
-                  onDelete={handleDeleteForm}
-                />
-              ))}
-            </div>
+            <SectionedFormDisplay 
+              forms={filteredAndSortedForms}
+              onDelete={handleDeleteForm}
+            />
           )}
         </>
       )}
