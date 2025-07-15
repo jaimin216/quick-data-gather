@@ -1,10 +1,14 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Save, Check, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { Save, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import FormModeToggle from './FormModeToggle';
-import FormSettingsDrawer from './FormSettingsDrawer';
 import QuizSettings from './QuizSettings';
 
 interface FormData {
@@ -19,8 +23,10 @@ interface FormData {
   allow_retake: boolean;
   auto_save_enabled: boolean;
   custom_thank_you_message?: string;
-  passing_feedback?: string;
-  failing_feedback?: string;
+  use_percentage_criteria: boolean;
+  use_mcq_criteria: boolean;
+  min_correct_mcqs?: number;
+  total_mcqs?: number;
 }
 
 interface FormSettingsProps {
@@ -29,121 +35,106 @@ interface FormSettingsProps {
   onSave: () => void;
   saving: boolean;
   lastSaved?: Date;
+  totalMcqs: number;
 }
 
-type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-
-export default function FormSettings({ form, onFormChange, onSave, saving, lastSaved }: FormSettingsProps) {
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
-
-  useEffect(() => {
-    if (saving) {
-      setSaveStatus('saving');
-    } else if (lastSaved) {
-      setSaveStatus('saved');
-      const timer = setTimeout(() => setSaveStatus('idle'), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [saving, lastSaved]);
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onFormChange({ ...form, title: e.target.value });
-  };
-
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onFormChange({ ...form, description: e.target.value });
-  };
-
-  const getSaveStatusIcon = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />;
-      case 'saved':
-        return <Check className="h-4 w-4 text-green-600" />;
-      case 'error':
-        return <X className="h-4 w-4 text-red-600" />;
-      default:
-        return <Save className="h-4 w-4" />;
-    }
-  };
-
-  const getSaveStatusText = () => {
-    switch (saveStatus) {
-      case 'saving':
-        return 'Saving...';
-      case 'saved':
-        return 'Saved ✓';
-      case 'error':
-        return 'Error ❌';
-      default:
-        return 'Save';
-    }
+export default function FormSettings({ 
+  form, 
+  onFormChange, 
+  onSave, 
+  saving, 
+  lastSaved,
+  totalMcqs 
+}: FormSettingsProps) {
+  const updateForm = (updates: Partial<FormData>) => {
+    onFormChange({ ...form, ...updates });
   };
 
   return (
-    <div className="space-y-4">
-      <FormModeToggle
-        isQuiz={form.is_quiz}
-        onToggle={(enabled) => onFormChange({ ...form, is_quiz: enabled })}
-      />
-
-      <Card className="rounded-lg shadow-md bg-gradient-to-br from-gray-50 to-gray-100 relative">
-        <CardContent className="p-6">
-          <div className="absolute top-4 right-4">
-            <Button 
-              onClick={onSave} 
-              disabled={saving}
-              size="sm"
-              className="flex items-center space-x-2 shadow-sm"
-            >
-              {getSaveStatusIcon()}
-              <span className="hidden sm:inline">{getSaveStatusText()}</span>
-            </Button>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl">Settings</CardTitle>
+            <div className="flex items-center space-x-3">
+              {lastSaved && (
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4" />
+                  <span>Last saved: {lastSaved.toLocaleTimeString()}</span>
+                </div>
+              )}
+              <Button onClick={onSave} disabled={saving} className="flex items-center space-x-2">
+                <Save className="h-4 w-4" />
+                <span>{saving ? 'Saving...' : 'Save'}</span>
+              </Button>
+            </div>
           </div>
-
-          <div className="space-y-4 pr-20">
-            <div>
-              <input
-                type="text"
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
                 value={form.title}
-                onChange={handleTitleChange}
-                placeholder={form.is_quiz ? "Quiz Title" : "Form Title"}
-                className="text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 w-full placeholder-gray-400 text-gray-900"
+                onChange={(e) => updateForm({ title: e.target.value })}
+                placeholder="Enter form title..."
+                className="text-lg"
               />
             </div>
-            
-            <div>
-              <textarea
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
                 value={form.description}
-                onChange={handleDescriptionChange}
-                placeholder={form.is_quiz ? "Quiz Description (Optional)" : "Form Description (Optional)"}
-                className="text-gray-600 bg-transparent border-none outline-none focus:ring-0 w-full resize-none placeholder-gray-400"
+                onChange={(e) => updateForm({ description: e.target.value })}
+                placeholder="Enter form description..."
                 rows={3}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="thank-you-message">Custom Thank You Message</Label>
+              <Textarea
+                id="thank-you-message"
+                value={form.custom_thank_you_message || ''}
+                onChange={(e) => updateForm({ custom_thank_you_message: e.target.value })}
+                placeholder="Thank you for your submission!"
+                rows={2}
+              />
+            </div>
           </div>
+
+          <Separator />
+
+          <FormModeToggle 
+            isQuiz={form.is_quiz}
+            onToggle={(enabled) => updateForm({ is_quiz: enabled })}
+          />
         </CardContent>
       </Card>
 
-      <FormSettingsDrawer
-        form={form}
-        onFormChange={onFormChange}
-        isQuiz={form.is_quiz}
-      />
-
       <QuizSettings
         isQuiz={form.is_quiz}
-        onQuizToggle={(enabled) => onFormChange({ ...form, is_quiz: enabled })}
+        onQuizToggle={(enabled) => updateForm({ is_quiz: enabled })}
         timeLimit={form.time_limit_minutes}
-        onTimeLimitChange={(minutes) => onFormChange({ ...form, time_limit_minutes: minutes })}
+        onTimeLimitChange={(minutes) => updateForm({ time_limit_minutes: minutes })}
         passingScore={form.passing_score}
-        onPassingScoreChange={(score) => onFormChange({ ...form, passing_score: score })}
+        onPassingScoreChange={(score) => updateForm({ passing_score: score })}
         showResults={form.show_results}
-        onShowResultsChange={(show) => onFormChange({ ...form, show_results: show })}
+        onShowResultsChange={(show) => updateForm({ show_results: show })}
         allowRetake={form.allow_retake}
-        onAllowRetakeChange={(allow) => onFormChange({ ...form, allow_retake: allow })}
+        onAllowRetakeChange={(allow) => updateForm({ allow_retake: allow })}
         autoSave={form.auto_save_enabled}
-        onAutoSaveChange={(enabled) => onFormChange({ ...form, auto_save_enabled: enabled })}
+        onAutoSaveChange={(enabled) => updateForm({ auto_save_enabled: enabled })}
+        usePercentageCriteria={form.use_percentage_criteria}
+        onUsePercentageCriteriaChange={(value) => updateForm({ use_percentage_criteria: value })}
+        useMcqCriteria={form.use_mcq_criteria}
+        onUseMcqCriteriaChange={(value) => updateForm({ use_mcq_criteria: value })}
+        minCorrectMcqs={form.min_correct_mcqs}
+        onMinCorrectMcqsChange={(count) => updateForm({ min_correct_mcqs: count })}
+        totalMcqs={totalMcqs}
       />
     </div>
   );

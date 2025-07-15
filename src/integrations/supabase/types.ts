@@ -63,14 +63,18 @@ export type Database = {
           description: string | null
           id: string
           is_quiz: boolean | null
+          min_correct_mcqs: number | null
           passing_score: number | null
           require_login: boolean
           show_results: boolean | null
           status: Database["public"]["Enums"]["form_status"]
           time_limit_minutes: number | null
           title: string
+          total_mcqs: number | null
           total_points: number | null
           updated_at: string
+          use_mcq_criteria: boolean | null
+          use_percentage_criteria: boolean | null
           user_id: string
         }
         Insert: {
@@ -83,14 +87,18 @@ export type Database = {
           description?: string | null
           id?: string
           is_quiz?: boolean | null
+          min_correct_mcqs?: number | null
           passing_score?: number | null
           require_login?: boolean
           show_results?: boolean | null
           status?: Database["public"]["Enums"]["form_status"]
           time_limit_minutes?: number | null
           title: string
+          total_mcqs?: number | null
           total_points?: number | null
           updated_at?: string
+          use_mcq_criteria?: boolean | null
+          use_percentage_criteria?: boolean | null
           user_id: string
         }
         Update: {
@@ -103,14 +111,18 @@ export type Database = {
           description?: string | null
           id?: string
           is_quiz?: boolean | null
+          min_correct_mcqs?: number | null
           passing_score?: number | null
           require_login?: boolean
           show_results?: boolean | null
           status?: Database["public"]["Enums"]["form_status"]
           time_limit_minutes?: number | null
           title?: string
+          total_mcqs?: number | null
           total_points?: number | null
           updated_at?: string
+          use_mcq_criteria?: boolean | null
+          use_percentage_criteria?: boolean | null
           user_id?: string
         }
         Relationships: []

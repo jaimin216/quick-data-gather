@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -97,6 +96,8 @@ export default function PublicForm() {
   const calculateScore = (responses: FormData): ExamResult => {
     let score = 0;
     let totalPoints = 0;
+    let correctMcqs = 0;
+    let totalMcqs = 0;
 
     questions.forEach(question => {
       const points = question.points || 1;
@@ -104,6 +105,11 @@ export default function PublicForm() {
 
       const userAnswer = responses[question.id];
       const correctAnswers = question.correct_answers as string[] | string | null;
+
+      // Count MCQs
+      if (['multiple_choice', 'checkbox', 'dropdown'].includes(question.type)) {
+        totalMcqs++;
+      }
 
       if (!correctAnswers || !userAnswer) return;
 
@@ -124,11 +130,32 @@ export default function PublicForm() {
 
       if (isCorrect) {
         score += points;
+        if (['multiple_choice', 'checkbox', 'dropdown'].includes(question.type)) {
+          correctMcqs++;
+        }
       }
     });
 
     const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
-    const passed = form?.passing_score ? percentage >= form.passing_score : percentage >= 60;
+    
+    // Check dual passing criteria
+    let passed = false;
+    
+    if (form?.use_percentage_criteria && form?.use_mcq_criteria) {
+      // Both criteria must be met
+      const percentagePassed = percentage >= (form.passing_score || 60);
+      const mcqPassed = correctMcqs >= (form.min_correct_mcqs || Math.ceil(totalMcqs / 2));
+      passed = percentagePassed && mcqPassed;
+    } else if (form?.use_percentage_criteria) {
+      // Only percentage criteria
+      passed = percentage >= (form.passing_score || 60);
+    } else if (form?.use_mcq_criteria) {
+      // Only MCQ criteria
+      passed = correctMcqs >= (form.min_correct_mcqs || Math.ceil(totalMcqs / 2));
+    } else {
+      // Default to percentage-based
+      passed = percentage >= (form.passing_score || 60);
+    }
 
     return { score, totalPoints, percentage, passed };
   };

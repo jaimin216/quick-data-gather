@@ -29,6 +29,10 @@ interface FormData {
   custom_thank_you_message?: string;
   passing_feedback?: string;
   failing_feedback?: string;
+  use_percentage_criteria: boolean;
+  use_mcq_criteria: boolean;
+  min_correct_mcqs?: number;
+  total_mcqs?: number;
 }
 
 interface QuestionData {
@@ -58,12 +62,24 @@ export default function FormBuilder() {
     show_results: true,
     allow_retake: true,
     auto_save_enabled: true,
+    use_percentage_criteria: true,
+    use_mcq_criteria: false,
   });
   const [questions, setQuestions] = useState<QuestionData[]>([]);
   const [saving, setSaving] = useState(false);
   const [loadingForm, setLoadingForm] = useState(!!id);
   const [isPublished, setIsPublished] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date>();
+
+  // Calculate total MCQs
+  const totalMcqs = questions.filter(q => 
+    ['multiple_choice', 'checkbox', 'dropdown'].includes(q.type)
+  ).length;
+
+  // Update total_mcqs in form when questions change
+  useEffect(() => {
+    setForm(prev => ({ ...prev, total_mcqs: totalMcqs }));
+  }, [totalMcqs]);
 
   useEffect(() => {
     if (user && id) {
@@ -99,6 +115,10 @@ export default function FormBuilder() {
       auto_save_enabled: template.form.auto_save_enabled ?? true,
       time_limit_minutes: template.form.time_limit_minutes,
       passing_score: template.form.passing_score,
+      use_percentage_criteria: template.form.use_percentage_criteria ?? true,
+      use_mcq_criteria: template.form.use_mcq_criteria ?? false,
+      min_correct_mcqs: template.form.min_correct_mcqs,
+      total_mcqs: template.form.total_mcqs,
     });
 
     const templateQuestions = template.questions.map((q: any, index: number) => ({
@@ -145,6 +165,10 @@ export default function FormBuilder() {
         allow_retake: formData.allow_retake ?? true,
         auto_save_enabled: formData.auto_save_enabled ?? true,
         custom_thank_you_message: formData.custom_thank_you_message || undefined,
+        use_percentage_criteria: formData.use_percentage_criteria ?? true,
+        use_mcq_criteria: formData.use_mcq_criteria ?? false,
+        min_correct_mcqs: formData.min_correct_mcqs || undefined,
+        total_mcqs: formData.total_mcqs || undefined,
       });
 
       setIsPublished(formData.status === 'published');
@@ -210,6 +234,10 @@ export default function FormBuilder() {
         allow_retake: form.allow_retake,
         auto_save_enabled: form.auto_save_enabled,
         custom_thank_you_message: form.custom_thank_you_message,
+        use_percentage_criteria: form.use_percentage_criteria,
+        use_mcq_criteria: form.use_mcq_criteria,
+        min_correct_mcqs: form.min_correct_mcqs,
+        total_mcqs: totalMcqs,
       };
 
       if (id) {
@@ -369,6 +397,7 @@ export default function FormBuilder() {
           onSave={saveForm}
           saving={saving}
           lastSaved={lastSaved}
+          totalMcqs={totalMcqs}
         />
 
         <QuestionsBuilder
