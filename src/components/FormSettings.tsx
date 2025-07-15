@@ -1,11 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Save, Check, X } from 'lucide-react';
 import FormModeToggle from './FormModeToggle';
+import FormSettingsDrawer from './FormSettingsDrawer';
 import QuizSettings from './QuizSettings';
 
 interface FormData {
@@ -19,6 +18,9 @@ interface FormData {
   show_results: boolean;
   allow_retake: boolean;
   auto_save_enabled: boolean;
+  custom_thank_you_message?: string;
+  passing_feedback?: string;
+  failing_feedback?: string;
 }
 
 interface FormSettingsProps {
@@ -85,14 +87,14 @@ export default function FormSettings({ form, onFormChange, onSave, saving, lastS
         onToggle={(enabled) => onFormChange({ ...form, is_quiz: enabled })}
       />
 
-      <Card className="rounded-lg shadow-md bg-gray-50 relative">
-        <CardContent className="p-4">
+      <Card className="rounded-lg shadow-md bg-gradient-to-br from-gray-50 to-gray-100 relative">
+        <CardContent className="p-6">
           <div className="absolute top-4 right-4">
             <Button 
               onClick={onSave} 
               disabled={saving}
               size="sm"
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 shadow-sm"
             >
               {getSaveStatusIcon()}
               <span className="hidden sm:inline">{getSaveStatusText()}</span>
@@ -106,7 +108,7 @@ export default function FormSettings({ form, onFormChange, onSave, saving, lastS
                 value={form.title}
                 onChange={handleTitleChange}
                 placeholder={form.is_quiz ? "Quiz Title" : "Form Title"}
-                className="text-2xl font-bold bg-transparent border-none outline-none focus:ring-0 w-full placeholder-gray-400"
+                className="text-3xl font-bold bg-transparent border-none outline-none focus:ring-0 w-full placeholder-gray-400 text-gray-900"
               />
             </div>
             
@@ -116,31 +118,18 @@ export default function FormSettings({ form, onFormChange, onSave, saving, lastS
                 onChange={handleDescriptionChange}
                 placeholder={form.is_quiz ? "Quiz Description (Optional)" : "Form Description (Optional)"}
                 className="text-gray-600 bg-transparent border-none outline-none focus:ring-0 w-full resize-none placeholder-gray-400"
-                rows={2}
+                rows={3}
               />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="allow_anonymous"
-                  checked={form.allow_anonymous}
-                  onCheckedChange={(checked) => onFormChange({ ...form, allow_anonymous: !!checked })}
-                />
-                <Label htmlFor="allow_anonymous" className="text-sm">Allow anonymous responses</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="collect_email"
-                  checked={form.collect_email}
-                  onCheckedChange={(checked) => onFormChange({ ...form, collect_email: !!checked })}
-                />
-                <Label htmlFor="collect_email" className="text-sm">Collect email addresses</Label>
-              </div>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      <FormSettingsDrawer
+        form={form}
+        onFormChange={onFormChange}
+        isQuiz={form.is_quiz}
+      />
 
       <QuizSettings
         isQuiz={form.is_quiz}

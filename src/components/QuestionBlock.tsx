@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { GripVertical, Trash2, Copy, ChevronDown, Plus, X } from 'lucide-react';
+import { GripVertical, Trash2, Copy, ChevronDown, Plus, X, Trophy } from 'lucide-react';
 import QuizQuestionSettings from './QuizQuestionSettings';
 import type { Enums } from '@/integrations/supabase/types';
 
@@ -79,22 +78,33 @@ export default function QuestionBlock({
 
   const needsOptions = ['multiple_choice', 'checkbox', 'dropdown'].includes(question.type);
 
-  const questionTypes = [
-    { value: 'text', label: 'Text' },
-    { value: 'textarea', label: 'Long Text' },
-    { value: 'multiple_choice', label: 'Multiple Choice' },
-    { value: 'checkbox', label: 'Checkbox' },
-    { value: 'dropdown', label: 'Dropdown' },
-    { value: 'number', label: 'Number' },
-    { value: 'email', label: 'Email' },
-    { value: 'date', label: 'Date' },
-    { value: 'rating', label: 'Rating' },
-  ];
+  // Filter question types for quiz mode
+  const availableTypes = isQuiz 
+    ? [
+        { value: 'multiple_choice', label: 'Multiple Choice' },
+        { value: 'checkbox', label: 'Checkbox' },
+        { value: 'dropdown', label: 'Dropdown' },
+        { value: 'text', label: 'Short Text' },
+        { value: 'textarea', label: 'Long Text' },
+      ]
+    : [
+        { value: 'text', label: 'Text' },
+        { value: 'textarea', label: 'Long Text' },
+        { value: 'multiple_choice', label: 'Multiple Choice' },
+        { value: 'checkbox', label: 'Checkbox' },
+        { value: 'dropdown', label: 'Dropdown' },
+        { value: 'number', label: 'Number' },
+        { value: 'email', label: 'Email' },
+        { value: 'date', label: 'Date' },
+        { value: 'rating', label: 'Rating' },
+      ];
 
   return (
     <Card 
-      className={`rounded-xl shadow-sm bg-white border transition-all duration-200 hover:shadow-md ${
-        isActive ? 'ring-2 ring-blue-500 border-blue-500' : ''
+      className={`rounded-xl shadow-sm transition-all duration-300 hover:shadow-md ${
+        isActive 
+          ? 'ring-2 ring-primary border-primary bg-primary/5' 
+          : 'bg-white border hover:border-muted-foreground/50'
       }`}
       onClick={onFocus}
     >
@@ -102,16 +112,22 @@ export default function QuestionBlock({
         <Collapsible open={!isCollapsed} onOpenChange={setIsCollapsed}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="cursor-move text-gray-400 hover:text-gray-600">
+              <div className="cursor-move text-gray-400 hover:text-gray-600 touch-manipulation">
                 <GripVertical className="h-5 w-5" />
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <span className="font-medium">Question {index + 1}</span>
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2 hover:bg-muted/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-xs font-medium text-primary">{index + 1}</span>
+                    </div>
+                    <span className="font-medium">Question {index + 1}</span>
+                  </div>
                   {isQuiz && question.points && (
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                      {question.points} pts
-                    </span>
+                    <div className="flex items-center space-x-1 bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 px-2 py-1 rounded-full">
+                      <Trophy className="h-3 w-3" />
+                      <span className="text-xs font-medium">{question.points} pts</span>
+                    </div>
                   )}
                   <ChevronDown className={`h-4 w-4 transition-transform ${isCollapsed ? '' : 'rotate-180'}`} />
                 </Button>
@@ -126,7 +142,7 @@ export default function QuestionBlock({
                   e.stopPropagation();
                   onDuplicate();
                 }}
-                className="flex items-center space-x-1"
+                className="flex items-center space-x-1 hover:bg-muted/50"
               >
                 <Copy className="h-4 w-4" />
                 <span className="hidden sm:inline">Duplicate</span>
@@ -138,7 +154,7 @@ export default function QuestionBlock({
                   e.stopPropagation();
                   onDelete();
                 }}
-                className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                className="flex items-center space-x-1 text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="hidden sm:inline">Delete</span>
@@ -159,7 +175,7 @@ export default function QuestionBlock({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {questionTypes.map(type => (
+                    {availableTypes.map(type => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
                       </SelectItem>
@@ -182,8 +198,8 @@ export default function QuestionBlock({
               <Input
                 value={question.title}
                 onChange={(e) => onUpdate('title', e.target.value)}
-                placeholder={`Question ${index + 1}`}
-                className="text-lg font-medium"
+                placeholder={`Enter your question here...`}
+                className="text-lg font-medium focus:ring-2 focus:ring-primary/20"
                 autoFocus={isActive && question.title === ''}
               />
             </div>
@@ -193,7 +209,8 @@ export default function QuestionBlock({
               <Input
                 value={question.description}
                 onChange={(e) => onUpdate('description', e.target.value)}
-                placeholder="Add helpful context for this question"
+                placeholder="Add helpful context or instructions for this question"
+                className="focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
@@ -203,17 +220,28 @@ export default function QuestionBlock({
                 <div className="space-y-2">
                   {options.map((option, optionIndex) => (
                     <div key={optionIndex} className="flex items-center space-x-2">
-                      <Input
-                        value={option}
-                        onChange={(e) => handleOptionChange(optionIndex, e.target.value)}
-                        placeholder={`Option ${optionIndex + 1}`}
-                        className="flex-1"
-                      />
+                      <div className="flex-1 relative">
+                        <Input
+                          value={option}
+                          onChange={(e) => handleOptionChange(optionIndex, e.target.value)}
+                          placeholder={`Option ${optionIndex + 1}`}
+                          className={`pr-8 ${
+                            isQuiz && question.correct_answers?.includes(option)
+                              ? 'border-green-500 bg-green-50'
+                              : ''
+                          }`}
+                        />
+                        {isQuiz && question.correct_answers?.includes(option) && (
+                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                          </div>
+                        )}
+                      </div>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => removeOption(optionIndex)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 touch-manipulation"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -224,7 +252,7 @@ export default function QuestionBlock({
                     variant="outline"
                     size="sm"
                     onClick={addOption}
-                    className="flex items-center space-x-2"
+                    className="flex items-center space-x-2 hover:bg-muted/50"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Add Option</span>

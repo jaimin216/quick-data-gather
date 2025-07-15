@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -27,6 +26,9 @@ interface FormData {
   show_results: boolean;
   allow_retake: boolean;
   auto_save_enabled: boolean;
+  custom_thank_you_message?: string;
+  passing_feedback?: string;
+  failing_feedback?: string;
 }
 
 interface QuestionData {
@@ -142,6 +144,7 @@ export default function FormBuilder() {
         show_results: formData.show_results ?? true,
         allow_retake: formData.allow_retake ?? true,
         auto_save_enabled: formData.auto_save_enabled ?? true,
+        custom_thank_you_message: formData.custom_thank_you_message || undefined,
       });
 
       setIsPublished(formData.status === 'published');
@@ -206,6 +209,7 @@ export default function FormBuilder() {
         show_results: form.show_results,
         allow_retake: form.allow_retake,
         auto_save_enabled: form.auto_save_enabled,
+        custom_thank_you_message: form.custom_thank_you_message,
       };
 
       if (id) {
@@ -371,6 +375,7 @@ export default function FormBuilder() {
           questions={questions}
           onQuestionsChange={setQuestions}
           isQuiz={form.is_quiz}
+          timeLimit={form.time_limit_minutes}
         />
       </div>
     </div>
