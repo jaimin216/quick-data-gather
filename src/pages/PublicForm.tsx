@@ -87,6 +87,7 @@ export default function PublicForm() {
   };
 
   const handleInputChange = (questionId: string, value: any) => {
+    console.log('Answer changed for question:', questionId, 'Value:', value);
     setFormData(prev => ({
       ...prev,
       [questionId]: value
@@ -94,6 +95,9 @@ export default function PublicForm() {
   };
 
   const calculateScore = (responses: FormData): ExamResult => {
+    console.log('Calculating score with responses:', responses);
+    console.log('Questions:', questions);
+    
     let score = 0;
     let totalPoints = 0;
     let correctMcqs = 0;
@@ -104,41 +108,94 @@ export default function PublicForm() {
       totalPoints += points;
 
       const userAnswer = responses[question.id];
-      const correctAnswers = question.correct_answers as string[] | string | null;
+      const correctAnswers = question.correct_answers;
+
+      console.log(`Question ${question.id}:`, {
+        userAnswer,
+        correctAnswers,
+        questionType: question.type,
+        points
+      });
 
       // Count MCQs
       if (['multiple_choice', 'checkbox', 'dropdown'].includes(question.type)) {
         totalMcqs++;
       }
 
-      if (!correctAnswers || !userAnswer) return;
+      if (!correctAnswers || userAnswer === undefined || userAnswer === null || userAnswer === '') {
+        console.log(`Skipping question ${question.id} - no correct answer or user answer`);
+        return;
+      }
 
       let isCorrect = false;
 
-      if (question.type === 'multiple_choice' || question.type === 'dropdown') {
-        isCorrect = userAnswer === correctAnswers;
-      } else if (question.type === 'checkbox') {
-        const userAnswerArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-        const correctAnswerArray = Array.isArray(correctAnswers) ? correctAnswers : [correctAnswers];
-        isCorrect = userAnswerArray.length === correctAnswerArray.length &&
-          userAnswerArray.every(answer => correctAnswerArray.includes(answer));
-      } else if (question.type === 'rating' || question.type === 'number') {
-        isCorrect = Number(userAnswer) === Number(correctAnswers);
-      } else {
-        isCorrect = String(userAnswer).toLowerCase().trim() === String(correctAnswers).toLowerCase().trim();
-      }
-
-      if (isCorrect) {
-        score += points;
-        if (['multiple_choice', 'checkbox', 'dropdown'].includes(question.type)) {
-          correctMcqs++;
+      try {
+        if (question.type === 'multiple_choice' || question.type === 'dropdown') {
+          // For single choice questions, compare directly
+          const correctAnswer = Array.isArray(correctAnswers) ? correctAnswers[0] : correctAnswers;
+          isCorrect = String(userAnswer).trim() === String(correctAnswer).trim();
+          console.log(`Single choice comparison: "${userAnswer}" === "${correctAnswer}" = ${isCorrect}`);
+        } else if (question.type === 'checkbox') {
+          // For multiple choice questions, compare arrays
+          const userAnswerArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+          const correctAnswerArray = Array.isArray(correctAnswers) ? correctAnswers : [correctAnswers];
+          
+          console.log('Checkbox comparison:', {
+            userAnswerArray,
+            correctAnswerArray
+          });
+          
+          // Sort both arrays and compare
+          const sortedUserAnswers = userAnswerArray.sort();
+          const sortedCorrectAnswers = correctAnswerArray.sort();
+          
+          isCorrect = sortedUserAnswers.length === sortedCorrectAnswers.length &&
+            sortedUserAnswers.every((answer, index) => 
+              String(answer).trim() === String(sortedCorrectAnswers[index]).trim()
+            );
+        } else if (question.type === 'rating' || question.type === 'number') {
+          // For numeric questions
+          const correctAnswer = Array.isArray(correctAnswers) ? correctAnswers[0] : correctAnswers;
+          isCorrect = Number(userAnswer) === Number(correctAnswer);
+          console.log(`Numeric comparison: ${Number(userAnswer)} === ${Number(correctAnswer)} = ${isCorrect}`);
+        } else {
+          // For text questions, case-insensitive comparison
+          const correctAnswer = Array.isArray(correctAnswers) ? correctAnswers[0] : correctAnswers;
+          isCorrect = String(userAnswer).toLowerCase().trim() === String(correctAnswer).toLowerCase().trim();
+          console.log(`Text comparison: "${userAnswer}" === "${correctAnswer}" = ${isCorrect}`);
         }
+
+        if (isCorrect) {
+          score += points;
+          if (['multiple_choice', 'checkbox', 'dropdown'].includes(question.type)) {
+            correctMcqs++;
+          }
+          console.log(`Question ${question.id} is CORRECT. Score += ${points}`);
+        } else {
+          console.log(`Question ${question.id} is INCORRECT`);
+        }
+      } catch (error) {
+        console.error(`Error evaluating question ${question.id}:`, error);
       }
     });
 
     const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
     
-    // Check dual passing criteria
+    console.log('Final scoring calculation:', {
+      score,
+      totalPoints,
+      percentage,
+      correctMcqs,
+      totalMcqs,
+      formConfig: {
+        usePercentageCriteria: form?.use_percentage_criteria,
+        useMcqCriteria: form?.use_mcq_criteria,
+        passingScore: form?.passing_score,
+        minCorrectMcqs: form?.min_correct_mcqs
+      }
+    });
+    
+    // Determine if student passed based on criteria
     let passed = false;
     
     if (form?.use_percentage_criteria && form?.use_mcq_criteria) {
@@ -146,16 +203,22 @@ export default function PublicForm() {
       const percentagePassed = percentage >= (form.passing_score || 60);
       const mcqPassed = correctMcqs >= (form.min_correct_mcqs || Math.ceil(totalMcqs / 2));
       passed = percentagePassed && mcqPassed;
+      console.log('Dual criteria check:', { percentagePassed, mcqPassed, passed });
     } else if (form?.use_percentage_criteria) {
       // Only percentage criteria
       passed = percentage >= (form.passing_score || 60);
+      console.log('Percentage criteria check:', { percentage, required: form.passing_score || 60, passed });
     } else if (form?.use_mcq_criteria) {
       // Only MCQ criteria
       passed = correctMcqs >= (form.min_correct_mcqs || Math.ceil(totalMcqs / 2));
+      console.log('MCQ criteria check:', { correctMcqs, required: form.min_correct_mcqs || Math.ceil(totalMcqs / 2), passed });
     } else {
-      // Default to percentage-based
-      passed = percentage >= (form.passing_score || 60);
+      // Default to percentage-based (60%)
+      passed = percentage >= 60;
+      console.log('Default criteria check:', { percentage, passed });
     }
+
+    console.log('Final result:', { score, totalPoints, percentage, passed });
 
     return { score, totalPoints, percentage, passed };
   };
