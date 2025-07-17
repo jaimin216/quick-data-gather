@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, FileText } from 'lucide-react';
 import { useMemo } from 'react';
 
 interface PersonalizedHeaderProps {
@@ -37,8 +37,9 @@ export function PersonalizedHeader({ totalForms, totalResponses, onOpenProfile }
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
       <div className="flex-1">
-        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          📋 Welcome back!
+        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-3">
+          <FileText className="h-8 w-8 text-primary" />
+          Welcome back!
         </h1>
         <p className="text-muted-foreground text-lg">
           {personalizedMessage}

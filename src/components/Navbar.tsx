@@ -23,12 +23,12 @@ export const Navbar = () => {
     <nav className={`fixed top-0 w-full z-50 transition-all duration-200 ${
       isScrolled 
         ? 'bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200' 
-        : 'bg-transparent'
+        : 'bg-white shadow-sm'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
               <FileText className="h-6 w-6 text-white" />
             </div>

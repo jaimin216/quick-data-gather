@@ -164,7 +164,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <PersonalizedHeader 
           totalForms={forms.length}
@@ -233,7 +233,7 @@ export default function Dashboard() {
               <EmptyState 
                 onCreateForm={handleCreateForm}
                 onUseTemplate={() => setTemplateSelectorOpen(true)}
-                title="No forms match your filters 🔍"
+                title="No forms match your filters"
                 description="Try adjusting your search criteria or clear all filters to see your forms."
                 showTemplateButton={false}
               />

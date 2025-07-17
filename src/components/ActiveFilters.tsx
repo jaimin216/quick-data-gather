@@ -1,7 +1,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { X, FileText, FlaskConical } from 'lucide-react';
 
 interface ActiveFiltersProps {
   searchQuery: string;
@@ -41,8 +41,18 @@ export function ActiveFilters({
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'form': return '📝 Forms';
-      case 'exam': return '🧪 Exams';
+      case 'form': return (
+        <div className="flex items-center gap-1">
+          <FileText className="h-3 w-3" />
+          Forms
+        </div>
+      );
+      case 'exam': return (
+        <div className="flex items-center gap-1">
+          <FlaskConical className="h-3 w-3" />
+          Exams
+        </div>
+      );
       default: return null;
     }
   };
