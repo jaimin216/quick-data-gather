@@ -244,45 +244,43 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
       
       <CardContent className="pt-0 relative z-10">
         <div className="flex items-center justify-between text-sm text-muted-foreground mb-4 gap-4">
-          <TooltipProvider>
-            <div className="flex items-center space-x-4">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {formatDate(form.created_at)}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Created on {formatDate(form.created_at)}</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center">
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    {form.question_count || 0}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{form.question_count || 0} questions</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1" />
-                    {form.response_count || 0}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{form.response_count || 0} responses</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </TooltipProvider>
+          <div className="flex items-center space-x-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {formatDate(form.created_at)}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Created on {formatDate(form.created_at)}</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  {form.question_count || 0}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{form.question_count || 0} questions</p>
+              </TooltipContent>
+            </Tooltip>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <Users className="h-4 w-4 mr-1" />
+                  {form.response_count || 0}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{form.response_count || 0} responses</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -300,35 +298,31 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
           
           {form.status === 'published' && (
             <>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button size="sm" variant="outline" asChild className="hover:scale-105 transition-transform">
-                      <Link to={`/forms/${form.id}/view`}>
-                        <Eye className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Preview form</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" asChild className="hover:scale-105 transition-transform">
+                    <Link to={`/forms/${form.id}/view`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Preview form</p>
+                </TooltipContent>
+              </Tooltip>
               
               <Dialog>
                 <DialogTrigger asChild>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button size="sm" variant="outline" className="hover:scale-105 transition-transform">
-                          <QrCode className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Share & QR Code</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="sm" variant="outline" className="hover:scale-105 transition-transform">
+                        <QrCode className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Share & QR Code</p>
+                    </TooltipContent>
+                  </Tooltip>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
@@ -338,20 +332,18 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
                 </DialogContent>
               </Dialog>
 
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button size="sm" variant="outline" asChild className="hover:scale-105 transition-transform">
-                      <Link to={`/forms/${form.id}/responses`}>
-                        <BarChart3 className="h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>View analytics</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button size="sm" variant="outline" asChild className="hover:scale-105 transition-transform">
+                    <Link to={`/forms/${form.id}/responses`}>
+                      <BarChart3 className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View analytics</p>
+                </TooltipContent>
+              </Tooltip>
             </>
           )}
         </div>

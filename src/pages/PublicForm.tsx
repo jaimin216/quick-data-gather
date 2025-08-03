@@ -366,10 +366,11 @@ export default function PublicForm() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading exam...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto mb-6"></div>
+          <p className="text-gray-700 text-lg font-medium">Loading form...</p>
+          <p className="text-gray-500 text-sm mt-2">Please wait while we prepare your form</p>
         </div>
       </div>
     );
@@ -377,11 +378,21 @@ export default function PublicForm() {
 
   if (!form) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <Card className="w-full max-w-md">
           <CardContent className="text-center py-12">
-            <h1 className="text-2xl font-bold mb-4">Form Not Found</h1>
-            <p className="text-gray-600">This form doesn't exist or is not published.</p>
+            <div className="mb-6">
+              <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Invalid Form ID</h1>
+            <p className="text-gray-600 mb-6">This form doesn't exist or is not published.</p>
+            <Button 
+              onClick={() => window.location.href = '/'}
+              variant="outline"
+              className="w-full"
+            >
+              Return to Home
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -391,14 +402,19 @@ export default function PublicForm() {
   if (submitted || showResultModal) {
     return (
       <>
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <Card>
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-4">
+          <Card className="w-full max-w-lg">
             <CardContent className="text-center py-12">
-              <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-6" />
-              <h1 className="text-2xl font-bold mb-4">Thank You!</h1>
-              <p className="text-gray-600 mb-6">
-                {form.custom_thank_you_message || 'Your response has been submitted successfully.'}
-              </p>
+              <div className="animate-scale-in">
+                <CheckCircle className="h-20 w-20 text-green-500 mx-auto mb-6" />
+                <h1 className="text-3xl font-bold text-gray-900 mb-4">Thank You!</h1>
+                <p className="text-gray-600 text-lg mb-6 leading-relaxed">
+                  {form.custom_thank_you_message || 'Your response has been submitted successfully.'}
+                </p>
+                <div className="text-xs text-gray-500 mt-8 pt-6 border-t border-gray-200">
+                  Powered by FormCraft
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -422,48 +438,62 @@ export default function PublicForm() {
 
   // Exam start screen
   if (form.is_quiz && !examStarted) {
+    const estimatedTime = Math.ceil(questions.length * 1.5); // 1.5 minutes per question estimate
+    
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold text-gray-900 mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+        <Card className="w-full max-w-2xl">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-4xl font-bold text-gray-900 mb-4">
               {form.title}
             </CardTitle>
             {form.description && (
-              <p className="text-gray-600 text-lg">{form.description}</p>
+              <p className="text-gray-600 text-xl leading-relaxed">{form.description}</p>
             )}
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="bg-blue-50 rounded-lg p-6 space-y-4">
-              <h3 className="font-semibold text-blue-900 flex items-center gap-2">
+          <CardContent className="space-y-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+              <h3 className="font-semibold text-blue-900 flex items-center gap-2 mb-4">
                 <FileText className="h-5 w-5" />
                 Exam Information
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Questions:</span> {questions.length}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="font-medium text-gray-700">Questions:</span> 
+                  <span className="text-blue-600 font-semibold">{questions.length}</span>
                 </div>
-                <div>
-                  <span className="font-medium">Total Points:</span> {form.total_points || questions.reduce((sum, q) => sum + (q.points || 1), 0)}
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="font-medium text-gray-700">Total Points:</span> 
+                  <span className="text-green-600 font-semibold">{form.total_points || questions.reduce((sum, q) => sum + (q.points || 1), 0)}</span>
                 </div>
                 {form.time_limit_minutes && (
-                  <div className="flex items-center gap-1">
-                    <Timer className="h-4 w-4" />
-                    <span className="font-medium">Time Limit:</span> {form.time_limit_minutes} minutes
+                  <div className="flex items-center gap-2">
+                    <Timer className="h-4 w-4 text-orange-500" />
+                    <span className="font-medium text-gray-700">Time Limit:</span> 
+                    <span className="text-orange-600 font-semibold">{form.time_limit_minutes} minutes</span>
                   </div>
                 )}
                 {form.passing_score && (
-                  <div>
-                    <span className="font-medium">Passing Score:</span> {form.passing_score}%
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span className="font-medium text-gray-700">Passing Score:</span> 
+                    <span className="text-purple-600 font-semibold">{form.passing_score}%</span>
                   </div>
                 )}
+                <div className="flex items-center gap-2 col-span-full">
+                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                  <span className="font-medium text-gray-700">Estimated Time:</span> 
+                  <span className="text-gray-600 font-semibold">{estimatedTime} minutes</span>
+                </div>
               </div>
             </div>
 
             {form.collect_email && (
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
+              <div className="space-y-3">
+                <Label htmlFor="email" className="flex items-center gap-2 text-lg font-medium">
+                  <Mail className="h-5 w-5 text-blue-600" />
                   Email Address
                 </Label>
                 <Input
@@ -472,27 +502,43 @@ export default function PublicForm() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
-                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+                  className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             )}
 
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h4 className="font-medium text-amber-800 mb-2">Important Instructions:</h4>
-              <ul className="text-sm text-amber-700 space-y-1">
-                <li>• Read each question carefully before answering</li>
-                <li>• You can navigate between questions, but cannot change answers after submission</li>
-                {form.time_limit_minutes && <li>• Your exam will auto-submit when time runs out</li>}
-                {!form.allow_retake && <li>• You only have one attempt for this exam</li>}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6">
+              <h4 className="font-semibold text-amber-800 mb-3 text-lg">📋 Important Instructions</h4>
+              <ul className="text-amber-700 space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-500 mt-1">•</span>
+                  <span>Read each question carefully before answering</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-amber-500 mt-1">•</span>
+                  <span>You can navigate between questions, but cannot change answers after submission</span>
+                </li>
+                {form.time_limit_minutes && (
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-500 mt-1">•</span>
+                    <span>Your exam will auto-submit when time runs out</span>
+                  </li>
+                )}
+                {!form.allow_retake && (
+                  <li className="flex items-start gap-2">
+                    <span className="text-amber-500 mt-1">•</span>
+                    <span>You only have one attempt for this exam</span>
+                  </li>
+                )}
               </ul>
             </div>
 
             <Button 
               onClick={() => setExamStarted(true)}
-              className="w-full py-3 text-lg font-semibold"
+              className="w-full py-4 text-xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl"
               size="lg"
             >
-              Start Exam
+              🚀 Start Exam
             </Button>
           </CardContent>
         </Card>
@@ -504,7 +550,7 @@ export default function PublicForm() {
   const unansweredCount = getUnansweredCount();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Timer for quizzes */}
       {form.is_quiz && form.time_limit_minutes && examStarted && (
         <ExamTimer
@@ -514,76 +560,95 @@ export default function PublicForm() {
         />
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl flex items-center gap-2">
-            {form.is_quiz ? (
-              <>
-                <FileText className="h-6 w-6 text-blue-600" />
-                {form.title}
-              </>
-            ) : (
-              form.title
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Card className="shadow-2xl border-0">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-t-lg">
+            <CardTitle className="text-3xl font-bold flex items-center gap-3">
+              {form.is_quiz ? (
+                <>
+                  <FileText className="h-8 w-8" />
+                  {form.title}
+                </>
+              ) : (
+                form.title
+              )}
+            </CardTitle>
+            {form.description && (
+              <p className="text-blue-100 mt-3 text-lg leading-relaxed">{form.description}</p>
             )}
-          </CardTitle>
-          {form.description && (
-            <p className="text-gray-600 mt-2">{form.description}</p>
-          )}
-        </CardHeader>
-        <CardContent>
-          {/* Progress indicator for quizzes */}
-          {form.is_quiz && (
-            <ExamProgressIndicator
-              currentQuestion={currentQuestionIndex}
-              totalQuestions={questions.length}
-              answeredQuestions={answeredQuestions}
-              questionIds={questions.map(q => q.id)}
-            />
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {form.collect_email && !form.is_quiz && (
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@example.com"
-                  className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+          </CardHeader>
+          <CardContent className="p-8">
+            {/* Progress indicator for quizzes */}
+            {form.is_quiz && (
+              <div className="mb-8">
+                <ExamProgressIndicator
+                  currentQuestion={currentQuestionIndex}
+                  totalQuestions={questions.length}
+                  answeredQuestions={answeredQuestions}
+                  questionIds={questions.map(q => q.id)}
                 />
               </div>
             )}
 
-            {questions.map((question, index) => (
-              <ExamQuestion
-                key={question.id}
-                question={question}
-                questionNumber={index + 1}
-                totalQuestions={questions.length}
-                value={formData[question.id]}
-                onChange={(value) => handleInputChange(question.id, value)}
-                disabled={submitted}
-              />
-            ))}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {form.collect_email && !form.is_quiz && (
+                <div className="space-y-3 bg-blue-50 p-6 rounded-xl border border-blue-100">
+                  <Label htmlFor="email" className="flex items-center gap-2 text-lg font-medium text-blue-900">
+                    <Mail className="h-5 w-5" />
+                    Email Address
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.email@example.com"
+                    className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              )}
 
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Button 
-                type="submit" 
-                className="flex-1 py-3 text-lg font-semibold" 
-                disabled={submitting}
-                size="lg"
-              >
-                {submitting ? 'Submitting...' : form.is_quiz ? 'Submit Exam' : 'Submit Response'}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-6">
+                {questions.map((question, index) => (
+                  <div key={question.id} className="animate-fade-in">
+                    <ExamQuestion
+                      question={question}
+                      questionNumber={index + 1}
+                      totalQuestions={questions.length}
+                      value={formData[question.id]}
+                      onChange={(value) => handleInputChange(question.id, value)}
+                      disabled={submitted}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-8 space-y-4">
+                <Button 
+                  type="submit" 
+                  className="w-full py-4 text-xl font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 transform hover:scale-[1.02] transition-all duration-200 shadow-lg hover:shadow-xl" 
+                  disabled={submitting}
+                  size="lg"
+                >
+                  {submitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                      Submitting...
+                    </div>
+                  ) : (
+                    `✨ ${form.is_quiz ? 'Submit Exam' : 'Submit Response'}`
+                  )}
+                </Button>
+                
+                <div className="text-center text-sm text-gray-500 pt-4 border-t border-gray-200">
+                  <p>Secured and powered by FormCraft</p>
+                  <p className="mt-1">Estimated time: {Math.ceil(questions.length * 1.5)} minutes</p>
+                </div>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Modals */}
       <ConfirmSubmitModal

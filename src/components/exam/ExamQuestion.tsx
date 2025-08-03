@@ -39,7 +39,7 @@ export function ExamQuestion({
             placeholder={question.description || `Enter ${question.title.toLowerCase()}`}
             required={question.required}
             disabled={disabled}
-            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         );
 
@@ -51,8 +51,8 @@ export function ExamQuestion({
             placeholder={question.description || `Enter ${question.title.toLowerCase()}`}
             required={question.required}
             disabled={disabled}
-            rows={4}
-            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            rows={6}
+            className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300 resize-none"
           />
         );
 
@@ -65,7 +65,7 @@ export function ExamQuestion({
             placeholder={question.description || `Enter ${question.title.toLowerCase()}`}
             required={question.required}
             disabled={disabled}
-            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         );
 
@@ -77,7 +77,7 @@ export function ExamQuestion({
             onChange={(e) => onChange(e.target.value)}
             required={question.required}
             disabled={disabled}
-            className="transition-all duration-200 focus:ring-2 focus:ring-blue-500"
+            className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
           />
         );
 
@@ -91,15 +91,15 @@ export function ExamQuestion({
             className="space-y-3"
           >
             {options.map((option, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+              <div key={index} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                 <RadioGroupItem 
                   value={option} 
                   id={`${question.id}-${index}`}
-                  className="border-2 border-blue-500 text-blue-500 focus:ring-blue-500"
+                  className="border-2 border-blue-500 text-blue-500 focus:ring-blue-500 scale-125"
                 />
                 <Label 
                   htmlFor={`${question.id}-${index}`}
-                  className="flex-1 cursor-pointer font-medium"
+                  className="flex-1 cursor-pointer font-medium text-lg text-gray-800"
                 >
                   {option}
                 </Label>
@@ -114,7 +114,7 @@ export function ExamQuestion({
         return (
           <div className="space-y-3">
             {checkboxOptions.map((option, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors">
+              <div key={index} className="flex items-center space-x-4 p-4 rounded-xl border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                 <Checkbox
                   id={`${question.id}-${index}`}
                   checked={selectedOptions.includes(option)}
@@ -126,11 +126,11 @@ export function ExamQuestion({
                     }
                   }}
                   disabled={disabled}
-                  className="border-2 border-blue-500 data-[state=checked]:bg-blue-500"
+                  className="border-2 border-blue-500 data-[state=checked]:bg-blue-500 scale-125"
                 />
                 <Label 
                   htmlFor={`${question.id}-${index}`}
-                  className="flex-1 cursor-pointer font-medium"
+                  className="flex-1 cursor-pointer font-medium text-lg text-gray-800"
                 >
                   {option}
                 </Label>
@@ -143,7 +143,7 @@ export function ExamQuestion({
         const dropdownOptions = question.options as string[] || [];
         return (
           <Select value={value || ''} onValueChange={onChange} disabled={disabled}>
-            <SelectTrigger className="transition-all duration-200 focus:ring-2 focus:ring-blue-500">
+            <SelectTrigger className="py-3 px-4 text-lg transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300">
               <SelectValue placeholder={question.description || `Select ${question.title.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
@@ -158,18 +158,20 @@ export function ExamQuestion({
 
       case 'rating':
         return (
-          <div className="flex space-x-2">
+          <div className="flex space-x-3 justify-center">
             {[1, 2, 3, 4, 5].map((rating) => (
               <button
                 key={rating}
                 type="button"
                 onClick={() => onChange(rating)}
                 disabled={disabled}
-                className={`p-2 transition-all duration-200 ${
-                  value >= rating ? 'text-yellow-400' : 'text-gray-300'
-                } hover:text-yellow-400 disabled:cursor-not-allowed`}
+                className={`p-3 rounded-full transition-all duration-200 hover:scale-110 ${
+                  value >= rating ? 'text-yellow-400 bg-yellow-50' : 'text-gray-300 hover:text-yellow-400'
+                } disabled:cursor-not-allowed border-2 ${
+                  value >= rating ? 'border-yellow-300' : 'border-gray-200'
+                }`}
               >
-                <Star className="h-8 w-8 fill-current" />
+                <Star className="h-10 w-10 fill-current" />
               </button>
             ))}
           </div>
@@ -181,30 +183,32 @@ export function ExamQuestion({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start mb-4">
+    <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-200">
+      <div className="flex justify-between items-start mb-6">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-md">
               Question {questionNumber} of {totalQuestions}
             </span>
             {question.points && (
-              <span className="bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
+              <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-md">
                 {question.points} point{question.points !== 1 ? 's' : ''}
               </span>
             )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
             {question.title}
-            {question.required && <span className="text-red-500 ml-1 text-xl">*</span>}
+            {question.required && <span className="text-red-500 ml-2 text-2xl">*</span>}
           </h3>
           {question.description && (
-            <p className="text-gray-600 mb-4">{question.description}</p>
+            <p className="text-gray-600 mb-6 text-lg leading-relaxed">{question.description}</p>
           )}
         </div>
       </div>
       
-      {renderQuestionInput()}
+      <div className="bg-gray-50 rounded-lg p-6">
+        {renderQuestionInput()}
+      </div>
     </div>
   );
 }
