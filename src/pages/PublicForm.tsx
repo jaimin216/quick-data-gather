@@ -236,8 +236,8 @@ export default function PublicForm() {
     if (e) e.preventDefault();
     if (!form) return;
 
-    // Skip confirmation modal if time is up
-    if (e && form.is_quiz) {
+    // Show confirmation modal for quiz submissions (but not when time runs out)
+    if (e && form.is_quiz && !submitting) {
       setShowConfirmModal(true);
       return;
     }
@@ -378,7 +378,7 @@ export default function PublicForm() {
 
   if (!form) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 pt-16">
         <Card className="w-full max-w-md">
           <CardContent className="text-center py-12">
             <div className="mb-6">
@@ -402,7 +402,7 @@ export default function PublicForm() {
   if (submitted || showResultModal) {
     return (
       <>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center px-4 pt-16">
           <Card className="w-full max-w-lg">
             <CardContent className="text-center py-12">
               <div className="animate-scale-in">
@@ -441,7 +441,7 @@ export default function PublicForm() {
     const estimatedTime = Math.ceil(questions.length * 1.5); // 1.5 minutes per question estimate
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center px-4 pt-16">
         <Card className="w-full max-w-2xl">
           <CardHeader className="text-center pb-6">
             <CardTitle className="text-4xl font-bold text-gray-900 mb-4">
@@ -550,7 +550,7 @@ export default function PublicForm() {
   const unansweredCount = getUnansweredCount();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 pt-16">
       {/* Timer for quizzes */}
       {form.is_quiz && form.time_limit_minutes && examStarted && (
         <ExamTimer
