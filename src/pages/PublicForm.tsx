@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { CheckCircle, Mail, FileText, Timer } from 'lucide-react';
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 import { ExamTimer } from '@/components/exam/ExamTimer';
@@ -295,17 +295,24 @@ export default function PublicForm() {
         setExamResult(result);
 
         // Save quiz attempt
+        const quizAttemptData: any = {
+          form_id: form.id,
+          form_response_id: responseData.id,
+          score: result.score,
+          total_points: result.totalPoints,
+          percentage: result.percentage,
+          passed: result.passed,
+          completed_at: new Date().toISOString()
+        };
+
+        // Set user_id to null for anonymous users
+        if (form.allow_anonymous && !form.require_login) {
+          quizAttemptData.user_id = null;
+        }
+
         const { error: attemptError } = await supabase
           .from('quiz_attempts')
-          .insert({
-            form_id: form.id,
-            form_response_id: responseData.id,
-            score: result.score,
-            total_points: result.totalPoints,
-            percentage: result.percentage,
-            passed: result.passed,
-            completed_at: new Date().toISOString()
-          });
+          .insert(quizAttemptData);
 
         if (attemptError) {
           console.error('Quiz attempt error:', attemptError);

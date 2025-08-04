@@ -1,6 +1,6 @@
 
 import { AlertTriangle } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 interface ConfirmSubmitModalProps {
@@ -26,6 +26,9 @@ export function ConfirmSubmitModal({
             <AlertTriangle className="h-5 w-5 text-amber-500" />
             Confirm Submission
           </DialogTitle>
+          <DialogDescription>
+            This action cannot be undone once you submit your exam.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4">
