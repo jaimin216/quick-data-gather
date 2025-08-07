@@ -1,6 +1,6 @@
 
 import { useMemo } from 'react';
-import { PremiumFormCard } from './PremiumFormCard';
+import { EnhancedFormCard } from './EnhancedFormCard';
 import { FileText, FlaskConical } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 
@@ -50,7 +50,7 @@ export function SectionedFormDisplay({ forms, onDelete, onStatusChange }: Sectio
                 className="animate-scale-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <PremiumFormCard
+                <EnhancedFormCard
                   form={form}
                   onDelete={onDelete}
                   onStatusChange={onStatusChange}
@@ -78,7 +78,7 @@ export function SectionedFormDisplay({ forms, onDelete, onStatusChange }: Sectio
                 className="animate-scale-in"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
-                <PremiumFormCard
+                <EnhancedFormCard
                   form={form}
                   onDelete={onDelete}
                   onStatusChange={onStatusChange}

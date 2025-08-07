@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Sparkles } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { FormTemplateSelector } from '@/components/FormTemplateSelector';
 import { DashboardFilters } from '@/components/DashboardFilters';
 import { UnifiedCreateButton } from '@/components/UnifiedCreateButton';
@@ -193,12 +193,12 @@ export default function Dashboard() {
               
               <div className="flex gap-3">
                 <Button 
-                  onClick={() => setTemplateSelectorOpen(true)}
+                  onClick={() => navigate('/templates')}
                   variant="outline"
                   className="flex items-center space-x-2 hover:bg-accent hover:scale-105 transition-all duration-200"
                 >
                   <Sparkles className="h-4 w-4" />
-                  <span>Templates</span>
+                  <span>Browse Templates</span>
                 </Button>
                 <UnifiedCreateButton onUseTemplate={() => setTemplateSelectorOpen(true)} />
               </div>

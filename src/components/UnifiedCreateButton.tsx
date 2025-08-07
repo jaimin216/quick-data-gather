@@ -39,10 +39,10 @@ export function UnifiedCreateButton({ onUseTemplate }: UnifiedCreateButtonProps)
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={onUseTemplate}>
-          <span className="flex items-center w-full">
-            ✨ Use Template
-          </span>
+        <DropdownMenuItem asChild>
+          <Link to="/templates" className="flex items-center w-full">
+            ✨ Browse Templates
+          </Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

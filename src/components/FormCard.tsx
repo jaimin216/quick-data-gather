@@ -17,7 +17,7 @@ import {
   MessageSquare,
   MoreHorizontal
 } from 'lucide-react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { FormShare } from '@/components/FormShare';
 import { supabase } from '@/integrations/supabase/client';
 import type { Tables } from '@/integrations/supabase/types';

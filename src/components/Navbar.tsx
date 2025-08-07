@@ -41,6 +41,11 @@ export const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
+                <Link to="/templates">
+                  <Button variant="outline" className="hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-200">
+                    Templates
+                  </Button>
+                </Link>
                 <Link to="/forms/new">
                   <Button className="flex items-center space-x-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
                     <Plus className="h-4 w-4" />
@@ -96,6 +101,11 @@ export const Navbar = () => {
             <div className="flex flex-col space-y-3">
               {user ? (
                 <>
+                  <Link to="/templates" className="block">
+                    <Button variant="outline" className="w-full justify-start">
+                      Templates
+                    </Button>
+                  </Link>
                   <Link to="/forms/new" className="block">
                     <Button className="w-full justify-start bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
                       <Plus className="h-4 w-4 mr-2" />

@@ -91,8 +91,9 @@ export const TemplatesSection = () => {
                 <Button 
                   variant="outline" 
                   className="w-full group-hover:bg-indigo-50 group-hover:border-indigo-200 transition-colors duration-200"
+                  asChild
                 >
-                  Use Template
+                  <a href="/templates">Browse Templates</a>
                 </Button>
               </CardContent>
               

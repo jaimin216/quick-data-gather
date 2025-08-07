@@ -10,6 +10,7 @@ import { Navbar } from "@/components/Navbar";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Templates from "./pages/Templates";
 import FormBuilder from "./pages/FormBuilder";
 import NotFound from "./pages/NotFound";
 import PublicForm from "./pages/PublicForm";
@@ -31,6 +32,7 @@ const App: React.FC = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/templates" element={<Templates />} />
                 <Route path="/forms/new" element={<FormBuilder />} />
                 <Route path="/forms/:id/edit" element={<FormBuilder />} />
                 <Route path="/forms/:id/view" element={<PublicForm />} />
