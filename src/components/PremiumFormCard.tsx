@@ -19,7 +19,7 @@ import {
   FileText,
   FlaskConical,
   Star,
-  TrendingUp
+  
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { FormShare } from '@/components/FormShare';
@@ -117,30 +117,21 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
   };
 
   const isExam = form.is_quiz || false;
-  const isPopular = (form.response_count || 0) > 10;
 
   return (
-    <Card 
-      className={`group relative overflow-hidden transition-all duration-300 ease-out cursor-pointer 
-        hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] 
-        bg-gradient-to-br from-background via-background to-background/50
-        backdrop-blur-sm border-border/50 hover:border-border
-        ${isExam 
-          ? "hover:shadow-purple-500/20 hover:border-purple-300/50" 
-          : "hover:shadow-blue-500/20 hover:border-blue-300/50"
-        }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Trending Badge */}
-      {isPopular && (
-        <div className="absolute top-3 right-3 z-10">
-          <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white gap-1 animate-pulse">
-            <TrendingUp className="h-3 w-3" />
-            🔥 Popular
-          </Badge>
-        </div>
-      )}
+    <TooltipProvider>
+      <Card 
+        className={`group relative overflow-hidden transition-all duration-300 ease-out cursor-pointer 
+          hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] 
+          bg-gradient-to-br from-background via-background to-background/50
+          backdrop-blur-sm border-border/50 hover:border-border
+          ${isExam 
+            ? "hover:shadow-purple-500/20 hover:border-purple-300/50" 
+            : "hover:shadow-blue-500/20 hover:border-blue-300/50"
+          }`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
 
       {/* Glassmorphism overlay on hover */}
       <div className={`absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${
@@ -312,18 +303,18 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
               </Tooltip>
               
               <Dialog>
-                <DialogTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DialogTrigger asChild>
                       <Button size="sm" variant="outline" className="hover:scale-105 transition-transform">
                         <QrCode className="h-4 w-4" />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Share & QR Code</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </DialogTrigger>
+                    </DialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Share & QR Code</p>
+                  </TooltipContent>
+                </Tooltip>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Share "{form.title}"</DialogTitle>
@@ -349,5 +340,6 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
         </div>
       </CardContent>
     </Card>
+    </TooltipProvider>
   );
 }

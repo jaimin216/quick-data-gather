@@ -262,6 +262,7 @@ export default function PublicForm() {
       // Create form response
       const formResponseData: TablesInsert<'form_responses'> = {
         form_id: form.id,
+        respondent_id: null, // Explicitly set to null for anonymous users
       };
 
       if (form.collect_email && email.trim()) {
