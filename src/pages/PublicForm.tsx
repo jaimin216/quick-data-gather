@@ -259,27 +259,30 @@ export default function PublicForm() {
         }
       }
 
-      // Create form response
+      // Create form response (avoid SELECT on RLS by providing ID client-side)
+      const responseId = typeof crypto !== 'undefined' && (crypto as any).randomUUID
+        ? (crypto as any).randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
       const formResponseData: TablesInsert<'form_responses'> = {
+        id: responseId as any,
         form_id: form.id,
-        respondent_id: null, // Explicitly set to null for anonymous users
-      };
+        respondent_id: null,
+      } as any;
 
       if (form.collect_email && email.trim()) {
         formResponseData.respondent_email = email.trim();
       }
 
-      const { data: responseData, error: responseError } = await supabase
+      const { error: responseError } = await supabase
         .from('form_responses')
-        .insert(formResponseData)
-        .select()
-        .single();
+        .insert(formResponseData);
 
       if (responseError) throw responseError;
 
       // Create question responses
       const questionResponses = questions.map(question => ({
-        form_response_id: responseData.id,
+        form_response_id: responseId,
         question_id: question.id,
         answer: formData[question.id] || null
       }));
@@ -298,7 +301,7 @@ export default function PublicForm() {
         // Save quiz attempt
         const quizAttemptData: any = {
           form_id: form.id,
-          form_response_id: responseData.id,
+          form_response_id: responseId,
           score: result.score,
           total_points: result.totalPoints,
           percentage: result.percentage,
