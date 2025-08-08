@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { 
   Eye, 
   Edit, 
@@ -315,9 +315,10 @@ export function PremiumFormCard({ form, onDelete, onStatusChange }: PremiumFormC
                     <p>Share & QR Code</p>
                   </TooltipContent>
                 </Tooltip>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
+                <DialogContent className="max-w-sm sm:max-w-md p-0 sm:p-4">
+                  <DialogHeader className="pb-0">
                     <DialogTitle>Share "{form.title}"</DialogTitle>
+                    <DialogDescription className="text-xs">Copy the link or share the QR code.</DialogDescription>
                   </DialogHeader>
                   <FormShare formId={form.id} formTitle={form.title} />
                 </DialogContent>

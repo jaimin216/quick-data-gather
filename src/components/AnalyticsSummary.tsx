@@ -47,25 +47,25 @@ export function AnalyticsSummary({
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       {stats.map((stat) => (
-        <Card key={stat.title} className="group hover:shadow-md transition-all duration-200 hover:-translate-y-1 border-border/50 bg-gradient-to-br from-background via-background to-accent/5">
-          <CardContent className="p-6">
+        <Card key={stat.title} className="group hover:shadow-md transition-all duration-200 hover:-translate-y-1 border-border/60 bg-card">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground mb-1">
+                <p className="text-xs font-medium text-muted-foreground mb-1 uppercase tracking-wide">
                   {stat.title}
                 </p>
-                <p className="text-2xl font-bold text-foreground">
+                <p className="text-2xl font-semibold text-foreground">
                   {stat.value}
                 </p>
                 <p className={`text-xs mt-1 flex items-center ${
-                  stat.positive ? 'text-green-600' : 'text-red-600'
+                  stat.positive ? 'text-emerald-600' : 'text-red-600'
                 }`}>
                   <TrendingUp className="h-3 w-3 mr-1" />
                   {stat.change}
                 </p>
               </div>
-              <div className="p-3 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                <stat.icon className="h-6 w-6 text-primary" />
+              <div className="p-3 rounded-md bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                <stat.icon className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardContent>

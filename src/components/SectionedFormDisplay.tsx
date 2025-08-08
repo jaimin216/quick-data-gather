@@ -36,10 +36,10 @@ export function SectionedFormDisplay({ forms, onDelete, onStatusChange }: Sectio
       {regularForms.length > 0 && (
         <section className="animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-blue-600 rounded-full"></div>
-            <FileText className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-foreground">My Forms</h2>
-            <span className="text-sm text-muted-foreground bg-blue-50 px-3 py-1 rounded-full">
+            <div className="w-1 h-8 bg-primary rounded-full"></div>
+            <FileText className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold text-foreground">My Forms</h2>
+            <span className="text-xs text-muted-foreground bg-accent/30 px-2.5 py-1 rounded-full">
               {regularForms.length} {regularForms.length === 1 ? 'form' : 'forms'}
             </span>
           </div>
@@ -64,10 +64,10 @@ export function SectionedFormDisplay({ forms, onDelete, onStatusChange }: Sectio
       {exams.length > 0 && (
         <section className="animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-purple-600 rounded-full"></div>
-            <FlaskConical className="h-6 w-6 text-purple-600" />
-            <h2 className="text-2xl font-bold text-foreground">My Exams</h2>
-            <span className="text-sm text-muted-foreground bg-purple-50 px-3 py-1 rounded-full">
+            <div className="w-1 h-8 bg-primary rounded-full"></div>
+            <FlaskConical className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-semibold text-foreground">My Exams</h2>
+            <span className="text-xs text-muted-foreground bg-accent/30 px-2.5 py-1 rounded-full">
               {exams.length} {exams.length === 1 ? 'exam' : 'exams'}
             </span>
           </div>

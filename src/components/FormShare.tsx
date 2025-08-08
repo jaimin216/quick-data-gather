@@ -90,59 +90,64 @@ export function FormShare({ formId, formTitle }: FormShareProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Share className="h-5 w-5" />
-          <span>Share Form</span>
+    <Card className="border-border/60">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Share className="h-4 w-4 text-primary" />
+          <span>Share & QR</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Public Link */}
-        <div className="space-y-2">
-          <Label>Public Link</Label>
-          <div className="flex space-x-2">
-            <Input
-              value={publicUrl}
-              readOnly
-              className="flex-1"
-            />
-            <Button onClick={copyToClipboard} size="sm">
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-sm text-gray-600">
-            Anyone with this link can access and fill out your form.
-          </p>
-        </div>
-
-        {/* QR Code */}
-        <div className="space-y-4">
-          <Label>QR Code</Label>
-          <div className="flex flex-col items-center space-y-4">
-            {qrCodeDataURL && (
-              <div className="p-4 bg-white rounded-lg border">
-                <img 
-                  src={qrCodeDataURL} 
-                  alt="QR Code" 
-                  className="w-48 h-48"
-                />
-              </div>
-            )}
-            <div className="flex space-x-2">
-              <Button onClick={downloadQRCode} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                Download QR Code
+      <CardContent className="space-y-5">
+        {/* Link + QR grid */}
+        <div className="grid gap-5 md:grid-cols-2">
+          {/* Public Link */}
+          <div className="space-y-2">
+            <Label>Public link</Label>
+            <div className="flex gap-2">
+              <Input
+                value={publicUrl}
+                readOnly
+                className="flex-1"
+              />
+              <Button onClick={copyToClipboard} size="sm" variant="secondary" aria-label="Copy form link">
+                <Copy className="h-4 w-4" />
               </Button>
-              <Button onClick={shareForm} size="sm">
-                <Share className="h-4 w-4 mr-2" />
-                Share
+              <Button asChild size="sm" variant="outline">
+                <a href={publicUrl} target="_blank" rel="noopener noreferrer" aria-label="Open public form">
+                  <Share className="h-4 w-4" />
+                </a>
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">Anyone with this link can open and submit the form.</p>
           </div>
-          <p className="text-sm text-gray-600 text-center">
-            Print or share this QR code for easy mobile access.
-          </p>
+
+          {/* QR Code */}
+          <div className="space-y-2">
+            <Label>QR code</Label>
+            <div className="flex flex-col items-center gap-3">
+              {qrCodeDataURL && (
+                <div className="p-3 rounded-md border bg-card">
+                  <img 
+                    src={qrCodeDataURL} 
+                    alt={`QR code for ${formTitle}`} 
+                    loading="lazy"
+                    className="w-40 h-40 md:w-48 md:h-48"
+                  />
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={downloadQRCode} variant="outline" size="sm">
+                  <Download className="h-4 w-4 mr-2" />
+                  Save
+                </Button>
+                <Button onClick={shareForm} size="sm" variant="secondary">
+                  <Share className="h-4 w-4 mr-2" />
+                  Share
+                </Button>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">Scan with any device to open instantly.</p>
+          </div>
         </div>
       </CardContent>
     </Card>
